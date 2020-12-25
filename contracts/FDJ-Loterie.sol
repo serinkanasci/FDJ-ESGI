@@ -1,15 +1,15 @@
-pragma solidity >=0.6.0 <0.8.0;
+pragma solidity >=0.5.0 <0.8.0;
 
 contract Lotery {
     
     //lotery structure
-    struct Lotery {
+    struct FDJ_Lotery {
         uint256 id;
         string name;
     }
-    //mapping(uint => Lotery)public Loteries;
+    //mapping(uint => FDJ_Lotery)public Loteries;
     
-    Lotery[] public Loteries;
+    FDJ_Lotery[] public Loteries;
 
     address payable admin;
     uint256 public idLotery;
@@ -67,7 +67,7 @@ contract Lotery {
     
     function addLotery(string memory _name) public restricted{
         require(!existingLoteryByName(_name), "Name already used !!");
-        Loteries.push(Lotery(idLotery, _name));
+        Loteries.push(FDJ_Lotery(idLotery, _name));
         idLotery ++;
     }
     
