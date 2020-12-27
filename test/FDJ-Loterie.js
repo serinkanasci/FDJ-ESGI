@@ -44,15 +44,27 @@ contract("Lotery Creation Test", accounts => {
         // Comparer les valeurs insérer pour les participants et les valeurs retourner.
         // Il faudrait un un get balance pour le wallet eth, et un get LoteryGain selon ID de la loterie
 
-        // let balanceBefore = accounts[1].balance;
+        let balanceBefore = await instance.getAccountBalance.call(accounts[1]);
         instance.participateToLotery(0, {from: accounts[1], value: 1000000000000000000});
-        // let balanceAfter = accounts[1].balance;
-        // // let valueLotery = instance.LoteryGain.call(0);
+        let balanceAfter = await instance.getAccountBalance.call(accounts[1]);
+        let valueLotery = await instance.getLoteryGain.call(0);
         // // assert.equal(firstParticipantValue, 10);
+        //Recupere les valeurs puis les transforme en string (BigNumber to String)
+        valueLotery = valueLotery.toString();
+        balanceAfter = balanceAfter.toString();
+        balanceBefore = balanceBefore.toString();
 
-        // console.log(accounts[1]);
-        // console.log(balanceAfter);
-        // console.log(balanceAfter);
+        //Recupere les valeurs puis les parse en entier (String to Int)
+        valueLotery = parseInt(valueLotery);
+        balanceAfter = parseInt(balanceAfter);
+        balanceBefore = parseInt(balanceBefore);
+
+        //Recupere les valeurs puis les transforme de wei en Ether (wei to Ether)
+        valueLotery = (valueLotery/1000000000000000000).toFixed(0);
+        balanceAfter = (balanceAfter/1000000000000000000).toFixed(0);
+        balanceBefore = (balanceBefore/1000000000000000000).toFixed(0);
+
+        assert.equal(balanceAfter, balanceBefore - valueLotery, "The Lotery Value is not equivalent to balance before and after");
 
         let errored = false; 
         try {
@@ -62,57 +74,73 @@ contract("Lotery Creation Test", accounts => {
         }
         assert.equal(errored, true);
 
-        instance.participateToLotery(0, {from: accounts[2], value: 1000000000000000000});
-    });
+        // Faire la meme choses pour un autre compte
+        let sec_balanceBefore = await instance.getAccountBalance.call(accounts[2]);
+        instance.participateToLotery(0, {from: accounts[2], value: 2000000000000000000});
+        let sec_balanceAfter = await instance.getAccountBalance.call(accounts[2]);
+        let sec_valueLotery = await instance.getLoteryGain.call(0);
 
-    it("Shouldn't pick any winner with someone else than admin", async () => {
-        let instance = await Lotery.deployed({from: accounts[0]});
+        //Recupere les valeurs puis les transforme en string (BigNumber to String)
+        sec_valueLotery = sec_valueLotery.toString();
+        sec_balanceAfter = sec_balanceAfter.toString();
+        sec_balanceBefore = sec_balanceBefore.toString();
+
+        //Recupere les valeurs puis les parse en entier (String to Int)
+        sec_valueLotery = parseInt(sec_valueLotery);
+        sec_balanceAfter = parseInt(sec_balanceAfter);
+        sec_balanceBefore = parseInt(sec_balanceBefore);
+
+        //Recupere les valeurs puis les transforme de wei en Ether (wei to Ether)
+        sec_valueLotery = (sec_valueLotery/1000000000000000000).toFixed(0);
+        sec_balanceAfter = (sec_balanceAfter/1000000000000000000).toFixed(0);
+        sec_balanceBefore = (sec_balanceBefore/1000000000000000000).toFixed(0);
+
+        assert.equal(sec_balanceAfter, sec_balanceBefore - (sec_valueLotery - valueLotery), "The Lotery Value is not equivalent to balance before and after");
+        
         // Test le lancement qui ne s'effectue pas avec autre que l'admin
-        let errored = false; 
+        let errored1 = false; 
         try {
             let pickWinner = await instance.pickWinnerForLotery.call(0, {from: accounts[5]});
         } catch (error) {
-            errored = true;
+            errored1 = true;
         }
-        assert.equal(errored, true);
-    });
+        assert.equal(errored1, true);
+        let admin = await instance.getAdmin.call();
 
-    it("Should pick a winner with admin", async () => {
-        let instance = await Lotery.deployed({from: accounts[0]});
-        // Test le lancement qui s'effectue avec admin
-        let errored = false; 
+        console.log(admin);
+        console.log(accounts[0]);
+
+        // Test le lancement qui s'effectue avec l'admin
+        let errored2 = false; 
         try {
-            let pickWinner = await instance.pickWinnerForLotery.call(0, {from: accounts[0]});
+            let pickWinner2 = await instance.pickWinnerForLotery.call(0);
         } catch (error) {
-            console.log(error)
-            errored = true;
+            console.log(error);
+            errored2 = true;
         }
-        assert.equal(errored, false);
+        assert.equal(errored2, false);
+
+
+        let acc_1 = await instance.getAccountBalance.call(accounts[1]);
+        let acc_2 = await instance.getAccountBalance.call(accounts[2]);
+
+        //Recupere les valeurs puis les transforme en string (BigNumber to String)
+        acc_1 = acc_1.toString();
+        acc_2 = acc_2.toString();
+
+        //Recupere les valeurs puis les parse en entier (String to Int)
+        acc_1 = parseInt(acc_1);
+        acc_2 = parseInt(acc_2);
+
+        //Recupere les valeurs puis les transforme de wei en Ether (wei to Ether)
+        acc_1 = (acc_1/1000000000000000000).toFixed(0);
+        acc_2 = (acc_2/1000000000000000000).toFixed(0);
+
+        if(acc_1 != balanceAfter){
+            assert.equal(acc_1, balanceAfter + sec_valueLotery, "The account 1 didn't receive the lotery value");
+        }
+        else{
+            assert.equal(acc_2, sec_balanceAfter + sec_valueLotery, "The account 2 didn't receive the lotery value");
+        }
     });
-
-    // it("Should give the money to someone", async () => {
-        
-    // });
-
-    // it("Should have only one lotery", async () => {
-    //     // Compare le nombre de loteries
-    //     let instance = await Lotery.deployed({from: accounts[0]});
-
-    //     let loteryList = await instance.listLoteries.call(0);
-    //     console.log(loteryList)
-    //     var loteryListSupposed = { '1': 'LoterieDeTest' };
-
-    //     assert.equal(loteryList, loteryListSupposed);
-    // });
-    
-
-
 })
-
-
-
-// participateToLotery
-// listParticipantsForLot
-// existingPlayerInLotery
-// listLoteries
-// pickWinnerForLotery

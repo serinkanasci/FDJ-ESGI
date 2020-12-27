@@ -88,6 +88,18 @@ contract Lotery {
         return address(this).balance;
     }
 
+    function getAccountBalance(address _account) public view returns(uint256){
+        return _account.balance;
+    }
+
+    function getLoteryGain(uint256 _lotery) public view returns(uint256){
+        return LoteryGain[_lotery];
+    }
+
+    function getAdmin() public view returns(address){
+        return admin;
+    }
+
     modifier restricted(){
         require(msg.sender == admin, "Vous n'etes pas admin !");
         _;
