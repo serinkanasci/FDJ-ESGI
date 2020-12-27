@@ -39,64 +39,71 @@ contract("Lotery Creation Test", accounts => {
         assert.equal(errored, true);
     });
 
-    // it("Should participate with 2 players and try to pick winner, then create 2 and pick winner ", async () => {
-    //     let instance = await Lotery.deployed({from: accounts[0]});
-    //     //Comparer les valeurs insérer pour les participants et les valeurs retourner
-    //     // let balanceBefore = accounts[1].balance;
-    //     instance.participateToLotery(0, {from: accounts[1], value: 10});
-    //     // let balanceAfter = accounts[1].balance;
-    //     // let valueLotery = instance.LoteryGain[0];
-    //     // assert.equal(firstParticipantValue, 10);
-    //     // console.log(accounts[1]);
-    //     // console.log(balanceAfter);
-    //     // console.log(balanceAfter);
-    //     let errored = false; 
-    //     try {
-    //         let pickWinner = await instance.pickWinnerForLotery.call(0);
-    //     } catch (error) {
-    //         errored = true;
-    //     }
-    //     assert.equal(errored, true);
+    it("Should participate with 2 players and try to pick winner, then create 2 and pick winner ", async () => {
+        let instance = await Lotery.deployed({from: accounts[0]});
+        // Comparer les valeurs insérer pour les participants et les valeurs retourner.
+        // Il faudrait un un get balance pour le wallet eth, et un get LoteryGain selon ID de la loterie
 
-    //     instance.participateToLotery(0, {from: accounts[2], value: 30});
-    // });
+        // let balanceBefore = accounts[1].balance;
+        instance.participateToLotery(0, {from: accounts[1], value: 1000000000000000000});
+        // let balanceAfter = accounts[1].balance;
+        // // let valueLotery = instance.LoteryGain.call(0);
+        // // assert.equal(firstParticipantValue, 10);
 
-    // it("Shouldn't pick any winner with someone else than admin", async () => {
-    //     let instance = await Lotery.deployed({from: accounts[0]});
-    //     // Test le lancement qui ne s'effectue pas avant 2 joueurs minimum
-    //     let errored = false; 
-    //     try {
-    //         let pickWinner = await instance.pickWinnerForLotery.call(0, {from: accounts[5]});
-    //     } catch (error) {
-    //         errored = true;
-    //     }
-    //     assert.equal(errored, true);
-    // });
+        // console.log(accounts[1]);
+        // console.log(balanceAfter);
+        // console.log(balanceAfter);
 
-    // it("Should pick a winner with admin", async () => {
-    //     let instance = await Lotery.deployed({from: accounts[0]});
-    //     // Test le lancement qui ne s'effectue pas avant 2 joueurs minimum
-    //     let errored = false; 
-    //     try {
-    //         let pickWinner = await instance.pickWinnerForLotery.call(0, {from: accounts[0]});
-    //     } catch (error) {
-    //         errored = true;
-    //     }
-    //     assert.equal(errored, true);
-    // });
+        let errored = false; 
+        try {
+            let pickWinner = await instance.pickWinnerForLotery.call(0);
+        } catch (error) {
+            errored = true;
+        }
+        assert.equal(errored, true);
+
+        instance.participateToLotery(0, {from: accounts[2], value: 1000000000000000000});
+    });
+
+    it("Shouldn't pick any winner with someone else than admin", async () => {
+        let instance = await Lotery.deployed({from: accounts[0]});
+        // Test le lancement qui ne s'effectue pas avec autre que l'admin
+        let errored = false; 
+        try {
+            let pickWinner = await instance.pickWinnerForLotery.call(0, {from: accounts[5]});
+        } catch (error) {
+            errored = true;
+        }
+        assert.equal(errored, true);
+    });
+
+    it("Should pick a winner with admin", async () => {
+        let instance = await Lotery.deployed({from: accounts[0]});
+        // Test le lancement qui s'effectue avec admin
+        let errored = false; 
+        try {
+            let pickWinner = await instance.pickWinnerForLotery.call(0, {from: accounts[0]});
+        } catch (error) {
+            console.log(error)
+            errored = true;
+        }
+        assert.equal(errored, false);
+    });
 
     // it("Should give the money to someone", async () => {
         
     // });
 
-    it("Should have only one lotery", async () => {
-        // Compare le nombre de loteries
-        let instance = await Lotery.deployed({from: accounts[0]});
+    // it("Should have only one lotery", async () => {
+    //     // Compare le nombre de loteries
+    //     let instance = await Lotery.deployed({from: accounts[0]});
 
-        let loteryList = await instance.listLoteries.call(0);
-        var loteryListSize = loteryList.length;
-        assert.equal(loteryListSize, 1);
-    });
+    //     let loteryList = await instance.listLoteries.call(0);
+    //     console.log(loteryList)
+    //     var loteryListSupposed = { '1': 'LoterieDeTest' };
+
+    //     assert.equal(loteryList, loteryListSupposed);
+    // });
     
 
 
