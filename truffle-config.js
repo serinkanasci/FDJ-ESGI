@@ -1,5 +1,5 @@
 
-const MNEMONIC = 'anchor ranch tourist match royal face stand imitate happy bacon dizzy like';
+const MNEMONIC = '';
 
 module.exports = {
   networks: {

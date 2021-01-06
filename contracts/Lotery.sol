@@ -7,6 +7,7 @@ contract Lotery {
         uint256 id;
         string name;
     }
+
     //mapping(uint => FDJ_Lotery)public Loteries;
     
     FDJ_Lotery[] public Loteries;
@@ -17,8 +18,7 @@ contract Lotery {
 
     mapping(uint256 => address payable[]) public participantIdLotery;
     mapping(uint256 => uint256) public LoteryGain;
-
-
+    
     constructor () public {
         idLotery = 0;
         admin = msg.sender;
