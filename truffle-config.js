@@ -1,5 +1,5 @@
 
-const mnemonic = 'dance expire artist core misery illegal reopen lamp soon woman dwarf list';
+const MNEMONIC = '';
 
 module.exports = {
   networks: {
