@@ -1,3 +1,5 @@
+const { exception } = require("sjcl");
+
 const Lotery = artifacts.require("Lotery");
 
 contract("Lotery Creation Test", accounts => {
@@ -64,7 +66,12 @@ contract("Lotery Creation Test", accounts => {
         balanceAfter = (balanceAfter/1000000000000000000).toFixed(0);
         balanceBefore = (balanceBefore/1000000000000000000).toFixed(0);
 
-        assert.equal(balanceAfter, balanceBefore - valueLotery, "The Lotery Value is not equivalent to balance before and after");
+        //Recupere les valeurs puis les transforment en entier
+        balanceAfter = Number(balanceAfter)
+        balanceBefore = Number(balanceBefore)
+        valueLotery = Number(valueLotery)
+
+        assert.approximately(balanceAfter, (balanceBefore - valueLotery), 0.20, "The Lotery Value is not equivalent to balance before and after");
 
         let errored = false; 
         try {
@@ -95,7 +102,12 @@ contract("Lotery Creation Test", accounts => {
         sec_balanceAfter = (sec_balanceAfter/1000000000000000000).toFixed(0);
         sec_balanceBefore = (sec_balanceBefore/1000000000000000000).toFixed(0);
 
-        assert.equal(sec_balanceAfter, sec_balanceBefore - (sec_valueLotery - valueLotery), "The Lotery Value is not equivalent to balance before and after");
+        //Recupere les valeurs puis les transforment en entier
+        sec_balanceAfter = Number(sec_balanceAfter)
+        sec_balanceBefore = Number(sec_balanceBefore)
+        sec_valueLotery = Number(sec_valueLotery)
+
+        assert.approximately(sec_balanceAfter, sec_balanceBefore - (sec_valueLotery - valueLotery), 0.20,"The Lotery Value is not equivalent to balance before and after");
         
         // Test le lancement qui ne s'effectue pas avec autre que l'admin
         let errored1 = false; 
@@ -107,13 +119,11 @@ contract("Lotery Creation Test", accounts => {
         assert.equal(errored1, true);
         let admin = await instance.getAdmin.call();
 
-        console.log(admin);
-        console.log(accounts[0]);
 
         // Test le lancement qui s'effectue avec l'admin
         let errored2 = false; 
         try {
-            let pickWinner2 = await instance.pickWinnerForLotery.call(0);
+            let pickWinner2 = await instance.pickWinnerForLotery.call(0, {from: accounts[0]});
         } catch (error) {
             console.log(error);
             errored2 = true;
@@ -136,11 +146,24 @@ contract("Lotery Creation Test", accounts => {
         acc_1 = (acc_1/1000000000000000000).toFixed(0);
         acc_2 = (acc_2/1000000000000000000).toFixed(0);
 
-        if(acc_1 != balanceAfter){
-            assert.equal(acc_1, balanceAfter + sec_valueLotery, "The account 1 didn't receive the lotery value");
+        //Recupere les valeurs puis les transforment en entier
+        acc_1 = Number(acc_1)
+        acc_2 = Number(acc_2)
+
+        // if(acc_1 != balanceAfter){
+        //     assert.approximately(acc_1, (balanceAfter + sec_valueLotery), 0.20,"The account 1 didn't receive the lotery value");
+        // }
+        // else{
+        //     assert.approximately(acc_2, (sec_balanceAfter + sec_valueLotery), 0.20,"The account 2 didn't receive the lotery value");
+        // }
+
+        try{
+            assert.approximately(acc_1, (balanceAfter + sec_valueLotery), 0.20,"The account 1 didn't receive the lotery value"); 
+        }catch (error){
+            console.log(error)
+            assert.approximately(acc_2, (sec_balanceAfter + sec_valueLotery), 0.20,"The account 2 didn't receive the lotery value");
         }
-        else{
-            assert.equal(acc_2, sec_balanceAfter + sec_valueLotery, "The account 2 didn't receive the lotery value");
-        }
+        
+
     });
 })
