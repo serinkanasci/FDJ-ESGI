@@ -25,7 +25,7 @@ contract Lotery {
     }
 
     function participateToLotery(uint256 idLot) public payable returns(uint256) {
-        require(msg.value > 0.2 ether, "Mise minimum non respestee!");
+        //require(msg.value > 0.00002 ether, "Mise minimum non respestee!");
         require(existingLoteryById(idLot), "La loterie n'existe pas bg");
         require(!existingPlayerInLotery(idLot, msg.sender), "Tu participes deja enfoireuh");
         participantIdLotery[idLot].push(msg.sender);
@@ -69,6 +69,10 @@ contract Lotery {
         require(!existingLoteryByName(_name), "Name already used !!");
         Loteries.push(FDJ_Lotery(idLotery, _name));
         idLotery ++;
+    }
+
+    function getLoteryLenght() public view returns (uint256){
+        return Loteries.length;
     }
     
     function listLoteries(uint256 _id) public view returns (uint256, string memory){

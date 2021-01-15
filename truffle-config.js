@@ -1,5 +1,5 @@
 //var HDWalletProvider = require("truffle-hdwallet-provider");
-const MNEMONIC = 'success upset drop gadget planet palace page unaware reopen simple rent client';
+const MNEMONIC = 'upon chair current filter orchard lizard reflect dance basic prize robust parade';
 
 module.exports = {
   networks: {

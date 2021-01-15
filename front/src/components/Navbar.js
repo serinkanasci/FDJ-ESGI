@@ -1,22 +1,25 @@
-import React, { Component } from 'react';
 import logo from '../logo.svg';
-
-class Navbar extends React.Component {
+import React, { Component } from 'react'; 
+import { Navbar, Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+class NavbarPerso extends React.Component {
 
   render() {
     return (
-    <>
-        <nav className="navbar navbar-dark bg-dark">
-            <a className="navbar-brand" href="www.facebook.com">
-                <img src={logo} width="30" height="30" class="d-inline-block align-top" alt="Logo Bitclic"/> 
-                Bitclic
-            </a>
-            &nbsp; <span>Current user address : {this.props.account}</span>
-        </nav>
-    </>   
+    <>    
+      <Navbar bg="dark" variant="dark">
+        <Navbar.Brand href="#home"> <img src={logo} height="30" width="30"></img></Navbar.Brand>
+        <Navbar.Brand href="#home">Bitclic</Navbar.Brand>
         
+          <Navbar.Collapse className="justify-content-end">
+            <Navbar.Text>
+              Signed in as: {this.props.account}
+            </Navbar.Text>
+        </Navbar.Collapse>
+      </Navbar>
+    </>         
     );
   }
 }
 
-export default Navbar;
+export default NavbarPerso;

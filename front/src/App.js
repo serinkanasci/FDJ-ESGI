@@ -1,6 +1,6 @@
 import './App.css';
-import React, { Component } from 'react';
-import Navbar from './components/Navbar.js';
+import React from 'react';
+import NavbarPerso from './components/Navbar.js';
 import Web3 from 'web3';
 import LoteryContract from './abis/Lotery.json';
 import Body from './components/Body.js';
@@ -34,8 +34,44 @@ async loadBlockchainData(){
       }else{
         window.alert('Lotery smart contract has not been deployed to detected network')
       }
+      
+      /* Créer une loterie avec un nom, renvoie une erreur si le nom existe déjà */
+       let addLotery1 = await this.state.loteryAbi.methods.addLotery("kk").send({ from: this.state.account })
+       console.log(addLotery1)
 
-  this.setState({ loading: false })
+       // let addLotery2 = await this.state.loteryAbi.methods.addLotery("AEZ").send({ from: this.state.account })
+       // console.log(addLotery2)
+
+       // let addLotery3 = await this.state.loteryAbi.methods.addLotery("GodZTier").send({ from: this.state.account })
+       // console.log(addLotery3)
+      
+       /*** Est censé renvoyer le nombre de trade afin de boucler et de tous les afficher mais bug alors que OK sur Remix */
+      // let numberOfLoteries = await this.state.loteryAbi.methods.getLoteryLenght().call()
+      // this.setState({numberOfLoteries: numberOfLoteries})
+      
+       /* Renvoie bien true si la loterie existe */
+      let result2 = await this.state.loteryAbi.methods.existingLoteryByName("a").call()
+      console.log("La loterie existe :" + result2)
+      
+      /* Renvoie la quantité d'ETH détenue dans le contrat */
+      let result3 = await this.state.loteryAbi.methods.getContractBalance().call()
+      console.log("Nombre d'ETH dans le contrat : " + result3)
+      
+      /* Renvoie la balance d'un compte, erreur s'il n'a pas encore été enregistré dans le SC */
+     // let result4 = await this.state.loteryAbi.methods.getAccountBalance(this.state.address).call()
+     // console.log(result4)
+
+     /* Renvoie l'adresse de l'admin */
+      let result5 = await this.state.loteryAbi.methods.getAdmin().call()
+      console.log("L'adresse de l'administrateur est " + result5)
+
+      /* Renvoie ID + nom d'une loterie */
+      let result6 = await this.state.loteryAbi.methods.listLoteries(0).call()
+      console.log("ID de la loterie : " + result6[0] + "/ Nom : " + result6[1])
+      this.setState({loadedLoteries: result6})
+      /* Mise mini trop élevée */
+      // let result7 = await this.state.loteryAbi.methods.participateToLotery(0).send({from: this.state.account})
+      this.setState({ loading: false })
 }
 
 async loadWeb3(){
@@ -57,6 +93,8 @@ async loadWeb3(){
     this.state = {
       account: '0x0',
       loteryAbi: {},
+      loadedLoteries: {},
+      numberOfLoteries: 0,
       loading: true
     }
   }
@@ -66,11 +104,11 @@ async loadWeb3(){
     if(this.state.loading){
       content  = <p id="loader" className="text-center">Loading...</p>
     }else{
-      content = <Body></Body>
+      content = <Body loteries = {this.state.loadedLoteries}></Body>
     }
     return (
       <>
-        <Navbar account = {this.state.account}></Navbar>
+        <NavbarPerso account = {this.state.account}></NavbarPerso>
         {content}
       </>
       
