@@ -2,7 +2,8 @@ import './App.css';
 import React, { Component } from 'react';
 import Navbar from './components/Navbar.js';
 import Web3 from 'web3';
-import LoteryContract from ''
+import LoteryContract from './abis/Lotery.json';
+import Body from './components/Body.js';
 
 class App extends React.Component {
 
@@ -25,7 +26,16 @@ async loadBlockchainData(){
       const netId = await web3.eth.net.getId()
       console.log(netId)
 
-  
+      const loteryContractData = LoteryContract.networks[netId]
+
+      if(loteryContractData){
+        const loteryContract = new web3.eth.Contract(LoteryContract.abi, loteryContractData.address)
+        this.setState({ loteryAbi: loteryContract })
+      }else{
+        window.alert('Lotery smart contract has not been deployed to detected network')
+      }
+
+  this.setState({ loading: false })
 }
 
 async loadWeb3(){
@@ -51,10 +61,17 @@ async loadWeb3(){
     }
   }
   render(){
+
+    let content
+    if(this.state.loading){
+      content  = <p id="loader" className="text-center">Loading...</p>
+    }else{
+      content = <Body></Body>
+    }
     return (
       <>
         <Navbar account = {this.state.account}></Navbar>
-        
+        {content}
       </>
       
     );
