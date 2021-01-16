@@ -23,15 +23,32 @@ contract Lotery {
         idLotery = 0;
         admin = msg.sender;
     }
+    event error(string _error);
 
     function participateToLotery(uint256 idLot) public payable returns(uint256) {
         //require(msg.value > 0.00002 ether, "Mise minimum non respestee!");
-        require(existingLoteryById(idLot), "La loterie n'existe pas bg");
-        require(!existingPlayerInLotery(idLot, msg.sender), "Tu participes deja enfoireuh");
-        participantIdLotery[idLot].push(msg.sender);
-        gains = msg.value;
-        LoteryGain[idLot] += msg.value;
-        return gains;
+        //require(existingLoteryById(idLot),"La loterie n'existe pas bg");
+        //require(!existingPlayerInLotery(idLot, msg.sender), "Tu participes deja enfoireuh");
+
+        if(existingLoteryById(idLot)){
+            if(!existingPlayerInLotery(idLot, msg.sender)){
+                participantIdLotery[idLot].push(msg.sender);
+                gains = msg.value;
+                LoteryGain[idLot] += msg.value;
+
+                // address(this) = address contrat - on convertit l'address en address payable pour qu'elle puisse recevoir des ETHs
+               // address payable tmp = address(uint160(address(this)));
+               // tmp.transfer(msg.value);
+                return gains;
+            }else{
+                emit error("You're already participating !");
+                return 1;
+            }
+        }else{
+            emit error("This lotery doesn't exists !");
+            return 2;
+        }
+        
     }
 
     function listParticipantsForLot(uint256 idLot) public view returns (address payable[] memory){
@@ -80,12 +97,19 @@ contract Lotery {
     }
 
     function pickWinnerForLotery(uint256 idLot) public payable restricted{
-        require(participantIdLotery[idLot].length > 1, "Minimum 2 joueurs");
-        uint256 winner = (uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, participantIdLotery[idLot])))) % participantIdLotery[idLot].length;
-        gains = uint256(LoteryGain[idLot])* uint256(90)/uint256(100);
-        participantIdLotery[idLot][winner].transfer(gains);
-        admin.transfer(LoteryGain[idLot]);
-        participantIdLotery[idLot] = new address payable[](0);
+
+        if(participantIdLotery[idLot].length > 1){
+            uint256 winner = (uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, participantIdLotery[idLot])))) % participantIdLotery[idLot].length;
+            gains = uint256(LoteryGain[idLot])* uint256(90)/uint256(100);
+            participantIdLotery[idLot][winner].transfer(gains);
+            admin.transfer(LoteryGain[idLot]);
+            participantIdLotery[idLot] = new address payable[](0);
+        }else{
+            emit error("Can't pick a winner because there's only 1 player!");
+
+        }
+       // require(participantIdLotery[idLot].length > 1, "Minimum 2 joueurs");
+        
     }
     
     function getContractBalance() public view returns(uint256){
