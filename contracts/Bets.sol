@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.4;
+pragma solidity >=0.5.0 <0.8.0;
 
 contract Bets {
 
     //bet status
-    uint constant STATUS_WIN = 1;
-    uint constant STATUS_LOSE = 2;
-    uint constant STATUS_TIE = 3;
-    uint constant STATUS_PENDING = 4;
+    uint constant WIN = 1;
+    uint constant LOSE = 2;
+    uint constant TIE = 3;
+    uint constant PENDING = 4;
 
     //game status
-    uint constant STATUS_NOT_STARTED = 1;
-    uint constant STATUS_STARTED = 2;
-    uint constant STATUS_COMPLETE = 3;
-    uint constant STATUS_ERROR = 4;
+    uint constant NOT_STARTED = 1;
+    uint constant STARTED = 2;
+    uint constant COMPLETE = 3;
+    uint constant ERROR = 4;
 
     //better struct
     struct Better {
         uint guess;
-        address addr;
+        address payable addr;
         uint status;
     }
 
@@ -27,7 +27,7 @@ contract Bets {
         uint256 betAmount;
         uint outcome;
         uint status;
-        Better originator;
+        Better creator;
         Better taker;
     }
 
@@ -38,14 +38,14 @@ contract Bets {
     receive() external payable {}
 
     function createBet(uint _guess) public payable {
-        game = Game(msg.value, 0, STATUS_STARTED, Better(_guess, msg.sender, STATUS_PENDING), Better(0, address(0), STATUS_NOT_STARTED));
-        game.originator = Better(_guess, msg.sender, STATUS_PENDING);
+        game = Game(msg.value, 0, STARTED, Better(_guess, msg.sender, PENDING), Better(0, address(0), NOT_STARTED));
+        game.creator = Better(_guess, msg.sender, PENDING);
     }
 
     function takeBet(uint _guess) public payable {
         //same bet amount plz
         require(msg.value == game.betAmount);
-        game.taker = Better(_guess, msg.sender, STATUS_PENDING);
+        game.taker = Better(_guess, msg.sender, PENDING);
         generateBetOutcome();
     }
 
@@ -53,24 +53,24 @@ contract Bets {
 
         checkPermissions(msg.sender);
 
-        if (game.originator.status == STATUS_TIE && game.taker.status == STATUS_TIE) {
-            game.originator.addr.transfer(game.betAmount);
+        if (game.creator.status == TIE && game.taker.status == TIE) {
+            game.creator.addr.transfer(game.betAmount);
             game.taker.addr.transfer(game.betAmount);
         } else {
-            if (game.originator.status == STATUS_WIN) {
-                game.originator.addr.transfer(game.betAmount * 2);
-            } else if (game.taker.status == STATUS_WIN) {
+            if (game.creator.status == WIN) {
+                game.creator.addr.transfer(game.betAmount * 2);
+            } else if (game.taker.status == WIN) {
                 game.taker.addr.transfer(game.betAmount * 2);
             } else {
-                game.originator.addr.transfer(game.betAmount);
+                game.creator.addr.transfer(game.betAmount);
                 game.taker.addr.transfer(game.betAmount);
             }
         }
     }
 
     function checkPermissions(address sender) view private {
-        //only the originator or taker can call this function
-        require(sender == game.originator.addr || sender == game.taker.addr);
+        //only the creator or taker can call this function
+        require(sender == game.creator.addr || sender == game.taker.addr);
     }
 
     function getBetAmount() public view returns(uint) {
@@ -78,9 +78,9 @@ contract Bets {
         return game.betAmount;
     }
 
-    function getOriginatorGuess() public view returns(uint) {
+    function getCreatorGuess() public view returns(uint) {
         checkPermissions(msg.sender);
-        return game.originator.guess;
+        return game.creator.guess;
     }
 
     function getTakerGuess() public view returns(uint) {
@@ -90,49 +90,49 @@ contract Bets {
 
     function getPot() public view returns(uint256) {
         checkPermissions(msg.sender);
-        return this.balance;
+        return address(this).balance;
     }
 
     function generateBetOutcome() private {
         //todo - not a great way to generate a random number but ok for now
-        game.outcome = uint(block.blockhash(block.number - 1)) % 10 + 1;
-        game.status = STATUS_COMPLETE;
+        game.outcome = uint(blockhash(block.number - 1)) % 10 + 1;
+        game.status = COMPLETE;
 
-        if (game.originator.guess == game.taker.guess) {
-            game.originator.status = STATUS_TIE;
-            game.taker.status = STATUS_TIE;
-        } else if (game.originator.guess > game.outcome && game.taker.guess > game.outcome) {
-            game.originator.status = STATUS_TIE;
-            game.taker.status = STATUS_TIE;
+        if (game.creator.guess == game.taker.guess) {
+            game.creator.status = TIE;
+            game.taker.status = TIE;
+        } else if (game.creator.guess > game.outcome && game.taker.guess > game.outcome) {
+            game.creator.status = TIE;
+            game.taker.status = TIE;
         } else {
-            if ((game.outcome - game.originator.guess) < (game.outcome - game.taker.guess)) {
-                game.originator.status = STATUS_WIN;
-                game.taker.status = STATUS_LOSE;
-            } else if ((game.outcome - game.taker.guess) < (game.outcome - game.originator.guess)) {
-                game.originator.status = STATUS_LOSE;
-                game.taker.status = STATUS_WIN;
+            if ((game.outcome - game.creator.guess) < (game.outcome - game.taker.guess)) {
+                game.creator.status = WIN;
+                game.taker.status = LOSE;
+            } else if ((game.outcome - game.taker.guess) < (game.outcome - game.creator.guess)) {
+                game.creator.status = LOSE;
+                game.taker.status = WIN;
             } else {
-                game.originator.status = STATUS_ERROR;
-                game.taker.status = STATUS_ERROR;
-                game.status = STATUS_ERROR;
+                game.creator.status = ERROR;
+                game.taker.status = ERROR;
+                game.status = ERROR;
             }
         }
     }
 
-    function getBetOutcome() public view returns(string memory description, string memory originatorKey, uint originatorStatus, string memory takerKey, uint takerStatus) {
-        if (game.originator.status == STATUS_TIE || game.taker.status == STATUS_TIE) {
+    function getBetOutcome() public view returns(string memory description, string memory creatorKey, uint creatorStatus, string memory takerKey, uint takerStatus) {
+        if (game.creator.status == TIE || game.taker.status == TIE) {
             description = "Both bets were the same or were over the number, the pot will be split";
         } else {
-            if (game.originator.status == STATUS_WIN) {
-                description = "Bet originator guess was closer to the number and will receive the pot";
-            } else if (game.taker.status == STATUS_WIN) {
+            if (game.creator.status == WIN) {
+                description = "Bet creator guess was closer to the number and will receive the pot";
+            } else if (game.taker.status == WIN) {
                 description = "Bet taker guess was closer to the number and will receive the pot";
             } else {
                 description = "Unknown Bet Outcome";
             }
         }
-        originatorKey = "originator";
-        originatorStatus = game.originator.status;
+        creatorKey = "creator";
+        creatorStatus = game.creator.status;
         takerKey = "taker";
         takerStatus = game.taker.status;
     }
