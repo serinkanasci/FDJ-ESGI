@@ -56,6 +56,11 @@ contract("Lotery Creation Test", accounts => {
         balanceAfter = balanceAfter.toString();
         balanceBefore = balanceBefore.toString();
 
+        // VERIFIER SI L'ADMIN EST BIEN LE COMPTE 0
+        // let admin = await instance.getAdmin.call();
+        // console.log(admin)
+        // console.log(accounts[0].toString())
+
         //Recupere les valeurs puis les parse en entier (String to Int)
         valueLotery = parseInt(valueLotery);
         balanceAfter = parseInt(balanceAfter);
@@ -117,15 +122,13 @@ contract("Lotery Creation Test", accounts => {
             errored1 = true;
         }
         assert.equal(errored1, true);
-        let admin = await instance.getAdmin.call();
-
 
         // Test le lancement qui s'effectue avec l'admin
         let errored2 = false; 
         try {
             let pickWinner2 = await instance.pickWinnerForLotery.call(0, {from: accounts[0]});
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             errored2 = true;
         }
         assert.equal(errored2, false);
@@ -160,7 +163,7 @@ contract("Lotery Creation Test", accounts => {
         try{
             assert.approximately(acc_1, (balanceAfter + sec_valueLotery), 0.20,"The account 1 didn't receive the lotery value"); 
         }catch (error){
-            console.log(error)
+            // console.log(error)
             assert.approximately(acc_2, (sec_balanceAfter + sec_valueLotery), 0.20,"The account 2 didn't receive the lotery value");
         }
         
