@@ -6,6 +6,7 @@ contract Lotery {
     struct FDJ_Lotery {
         uint256 id;
         string name;
+        bool status;
     }
 
     //mapping(uint => FDJ_Lotery)public Loteries;
@@ -84,7 +85,7 @@ contract Lotery {
     
     function addLotery(string memory _name) public restricted{
         require(!existingLoteryByName(_name), "Name already used !!");
-        Loteries.push(FDJ_Lotery(idLotery, _name));
+        Loteries.push(FDJ_Lotery(idLotery, _name, true));
         idLotery ++;
     }
 
@@ -92,8 +93,8 @@ contract Lotery {
         return Loteries.length;
     }
     
-    function listLoteries(uint256 _id) public view returns (uint256, string memory){
-        return (Loteries[_id].id, Loteries[_id].name);
+    function listLoteries(uint256 _id) public view returns (uint256, string memory, bool){
+        return (Loteries[_id].id, Loteries[_id].name, Loteries[_id].status);
     }
 
     function pickWinnerForLotery(uint256 idLot) public payable restricted{
@@ -104,12 +105,11 @@ contract Lotery {
             participantIdLotery[idLot][winner].transfer(gains);
             admin.transfer(LoteryGain[idLot]);
             participantIdLotery[idLot] = new address payable[](0);
+            Loteries[idLot].status = false;
         }else{
             emit error("Can't pick a winner because there's only 1 player!");
-
         }
        // require(participantIdLotery[idLot].length > 1, "Minimum 2 joueurs");
-        
     }
     
     function getContractBalance() public view returns(uint256){
@@ -131,6 +131,10 @@ contract Lotery {
     modifier restricted(){
         require(msg.sender == admin, "Vous n'etes pas admin !");
         _;
+    }
+
+    function getLoteriesCount() public view returns(uint) {
+        return Loteries.length;
     }
     
 }

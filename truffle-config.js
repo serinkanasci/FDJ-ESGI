@@ -1,5 +1,5 @@
 //var HDWalletProvider = require("truffle-hdwallet-provider");
-const MNEMONIC = 'debris surround faculty refuse nuclear uniform feed strategy dry yard liar stomach';
+const MNEMONIC = 'dance expire artist core misery illegal reopen lamp soon woman dwarf list';
 
 module.exports = {
   networks: {
