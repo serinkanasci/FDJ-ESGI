@@ -34,7 +34,7 @@ contract Lotery {
         if(existingLoteryById(idLot)){
             if(!existingPlayerInLotery(idLot, msg.sender)){
                 participantIdLotery[idLot].push(msg.sender);
-                gains = msg.value;
+                gains += msg.value;
                 LoteryGain[idLot] += msg.value;
 
                 // address(this) = address contrat - on convertit l'address en address payable pour qu'elle puisse recevoir des ETHs

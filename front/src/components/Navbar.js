@@ -13,7 +13,8 @@ class NavbarPerso extends React.Component {
         
           <Navbar.Collapse className="justify-content-end">
             <Navbar.Text>
-              Signed in as: {this.props.account}
+              Signed in as: {this.props.account} <br></br>
+              Actual balance: {this.props.currentBalance}
             </Navbar.Text>
         </Navbar.Collapse>
       </Navbar>

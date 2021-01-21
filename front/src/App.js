@@ -53,23 +53,26 @@ async loadBlockchainData(){
     // });
       
       /* Créer une loterie avec un nom, renvoie une erreur si le nom existe déjà */
-      try{      
+      try{  
         
-        // let addLotery2 = await this.state.loteryAbi.methods.addLotery("dsdsd").send({ from: this.state.account })
-        // console.log(addLotery2)
+        let currentBalance = await web3.eth.getBalance(this.state.account);
+        currentBalance = web3.utils.fromWei(currentBalance, 'ether')
+        this.setState({currentBalance})
 
-       let getLoteryCount = await this.state.loteryAbi.methods.getLoteriesCount().call()
+        let getLoteryCount = await this.state.loteryAbi.methods.getLoteriesCount().call()
         this.setState({ numberOfLoteries: getLoteryCount})
 
 
+      //   let addLotery2 = await this.state.loteryAbi.methods.addLotery("dsdsd").send({ from: this.state.account })
+      //   console.log(addLotery2)
       // let addLotery3 = await this.state.loteryAbi.methods.addLotery("dsqdsqdqs").send({ from: this.state.account })
       // console.log(addLotery3)
      
       // Participer à la loterie
 
       /*** */
-      // let participe1 = await this.state.loteryAbi.methods.participateToLotery(0).send({ from: this.state.account })
-      // console.log("participe "+web3.eth.abi.decodeLog(participe1))
+      // let participe1 = await this.state.loteryAbi.methods.participateToLotery(0).send({ from: this.state.account, value: 1000000000000000000 })
+      // console.log("participe "+ web3.eth.abi.decodeLog(participe1))
 
 
       /**** Est censé renvoyer le nombre de trade afin de boucler et de tous les afficher mais bug alors que OK sur Remix */
@@ -78,11 +81,13 @@ async loadBlockchainData(){
      /**** */
 
       /* Renvoie bien true si la loterie existe */
-     let result2 = await this.state.loteryAbi.methods.existingLoteryByName("a").call()
+    //  let result2 = await this.state.loteryAbi.methods.existingLoteryByName("a").call()
+    //  let test = await this.state.loteryAbi.methods.getLoteryGain(1).call()
+    //  console.log("Here is the win", test)
     //  console.log("La loterie existe :" + result2)
      
      /* Renvoie la quantité d'ETH détenue dans le contrat */
-     let result3 = await this.state.loteryAbi.methods.getContractBalance().call()
+    //  let result3 = await this.state.loteryAbi.methods.getContractBalance().call()
     //  console.log("Nombre d'ETH dans le contrat : " + result3)
      
      /* Renvoie la balance d'un compte, erreur s'il n'a pas encore été enregistré dans le SC */
@@ -96,14 +101,13 @@ async loadBlockchainData(){
      /* Renvoie ID + nom d'une loterie */
      console.log(this.state.numberOfLoteries)
       for (let i=0 ; i < this.state.numberOfLoteries; i++) {
-        console.log("dsqdsqdqssdq")
         let result6 = await this.state.loteryAbi.methods.listLoteries(i).call()
-        console.log(result6)
-        console.log("ID de la loterie : " + result6[0] + "/ Nom : " + result6[1])
         this.setState({loadedLoteries: this.state.loadedLoteries.concat(result6)})
+
+        let win = await this.state.loteryAbi.methods.getLoteryGain(i).call()
+        this.setState({LoteriesWin: this.state.LoteriesWin.concat(win)})
         // this.setState({loadedLoteries : this.state.loadedLoteries.push(result6)})
       }
-    
      
      /* Mise mini trop élevée */
      // let result7 = await this.state.loteryAbi.methods.participateToLotery(0).send({from: this.state.account})
@@ -133,8 +137,10 @@ async loadWeb3(){
     super(props)
     this.state = {
       account: '0x0',
+      currentBalance: 0,
       loteryAbi: {},
       loadedLoteries: [],
+      LoteriesWin: [],
       numberOfLoteries: 0,
       loading: true
     }
@@ -145,12 +151,12 @@ async loadWeb3(){
     if(this.state.loading){
       content  = <p id="loader" className="text-center">Loading...</p>
     }else{
-      content = <Body loteries = {this.state.loadedLoteries} account = {this.state.account} loteriesLength = {this.state.numberOfLoteries} loteryAbi = {this.state.loteryAbi}></Body>
+      content = <Body loteries = {this.state.loadedLoteries} account = {this.state.account} loteriesLength = {this.state.numberOfLoteries} loteryAbi = {this.state.loteryAbi} LoteriesWin = {this.state.LoteriesWin}></Body>
       // content = <Body loteries = {this.state.loadedLoteries}></Body>
     }
     return (
       <>
-        <NavbarPerso account = {this.state.account}></NavbarPerso>
+        <NavbarPerso account = {this.state.account} currentBalance = {this.state.currentBalance}></NavbarPerso>
         {content}
       </>
       
