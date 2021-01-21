@@ -16,7 +16,7 @@ class Body extends React.Component {
             <Card.Text >
               Ceci pourrait être une description à rajouter dans le smart contract
             </Card.Text>
-            <Button variant="primary" onClick={async () => {await this.props.loteryAbi.methods.participateToLotery(i).send({ from: this.props.account, value: 1000000000000000000})}}>Participate !</Button>
+            <Button variant="primary" onClick={async () => {await this.props.loteryAbi.methods.participateToLotery(i).send({ from: this.props.account, value: 1000000000000000000})}}>Participate to {i}!</Button>
             <Button style={{marginLeft:'1%'}} variant="primary" onClick={ async () => {await this.props.loteryAbi.methods.pickWinnerForLotery(i).send({ from: this.props.account })}}>Pick Winner !</Button>
             </Card.Body>
           </Card>
@@ -35,3 +35,5 @@ class Body extends React.Component {
 }
 
 export default Body;
+
+// 

@@ -95,7 +95,9 @@ async loadBlockchainData(){
     // console.log(result4)
 
     /* Renvoie l'adresse de l'admin */
-     let result5 = await this.state.loteryAbi.methods.getAdmin().call()
+    let result5 = await this.state.loteryAbi.methods.getAdmin().call()
+    let existing = await this.state.loteryAbi.methods.existingLoteryById(0).call()
+    console.log(existing)
     //  console.log("L'adresse de l'administrateur est " + result5)
 
      /* Renvoie ID + nom d'une loterie */
