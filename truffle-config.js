@@ -10,14 +10,14 @@ module.exports = {
     }
   },
   ///contracts_directory: '.front/src/contracts/',
-  contracts_build_directory: './front/src/abis/',
+  contracts_build_directory: './front/src/abis/', // Définit le répertoire où se sauvegarderont les contrats compilés
   compilers: {
-    solc: {
+    solc: { // Il existe aussi la possibilité d'utiliser Vyper ou des compilateurs externes
       optimizer: {
-        enabled: true,
-        runs: 200
+        enabled: true, // On active l'optimizer
+        runs: 200 // Et on le fait tourner sur 200 runs, sur ces 200 solc va garder en mémoire la comilation qui aura été la plus efficace en termes de coût de déploiement
       },
-      evmVersion: "petersburg"
+      evmVersion: "petersburg" // Version de l'EVM (la dernière en date ici)
     }
   }
 };

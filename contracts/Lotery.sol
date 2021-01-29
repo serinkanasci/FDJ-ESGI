@@ -105,7 +105,7 @@ contract Lotery {
             participantIdLotery[idLot][winner].transfer(gains);
             admin.transfer(LoteryGain[idLot]);
             participantIdLotery[idLot] = new address payable[](0);
-            Loteries[idLot].status = false;
+            setStatus(idLot, false);
         }else{
             emit error("Can't pick a winner because there's only 1 player!");
         }
@@ -135,6 +135,11 @@ contract Lotery {
 
     function getLoteriesCount() public view returns(uint) {
         return Loteries.length;
+    }
+
+    function setStatus(uint256 id, bool isUp) public returns (bool){
+        Loteries[id].status = isUp;
+        return true;
     }
     
 }
