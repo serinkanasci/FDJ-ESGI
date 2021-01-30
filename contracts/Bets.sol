@@ -2,138 +2,105 @@
 pragma solidity >=0.5.0 <0.8.0;
 
 contract Bets {
-
-    //bet status
-    uint constant WIN = 1;
-    uint constant LOSE = 2;
-    uint constant TIE = 3;
-    uint constant PENDING = 4;
-
-    //game status
-    uint constant NOT_STARTED = 1;
-    uint constant STARTED = 2;
-    uint constant COMPLETE = 3;
-    uint constant ERROR = 4;
-
-    //better struct
-    struct Better {
-        uint guess;
-        address payable addr;
-        uint status;
+    uint256 idBet;
+    address payable admin;
+    
+    //status
+    uint256 constant WIN = 1;
+    uint256 constant LOSE = 2;
+    uint256 constant TIE = 3;
+    uint256 constant PENDING = 4;
+    
+    struct Side {
+        string name;
+        uint256 status;
+        address payable[] players;
     }
-
-    //game struct
-    struct Game {
-        uint256 betAmount;
-        uint outcome;
-        uint status;
-        Better creator;
-        Better taker;
+    
+    struct Bet {
+        uint256 id;
+        Side side1;
+        Side side2;
     }
-
-    //game
-    Game game;
-
-    //fallback function
-    receive() external payable {}
-
-    function createBet(uint _guess) public payable {
-        game = Game(msg.value, 0, STARTED, Better(_guess, msg.sender, PENDING), Better(0, address(0), NOT_STARTED));
-        game.creator = Better(_guess, msg.sender, PENDING);
+    
+    Bet[] bets;
+    
+    constructor() public{
+        idBet = 0;
+        admin = msg.sender;
     }
-
-    function takeBet(uint _guess) public payable {
-        //same bet amount plz
-        require(msg.value == game.betAmount);
-        game.taker = Better(_guess, msg.sender, PENDING);
-        generateBetOutcome();
+    
+    function createBet(string memory nameSide1, string memory nameSide2) public {
+        address payable[] memory players;
+        Side memory side1 = Side(nameSide1, PENDING, players);
+        Side memory side2 = Side(nameSide2, PENDING, players);
+        Bet memory bet = Bet(idBet, side1, side2);
+        bets.push(bet);
+        idBet++;
     }
-
-    function payout() public payable {
-
-        checkPermissions(msg.sender);
-
-        if (game.creator.status == TIE && game.taker.status == TIE) {
-            game.creator.addr.transfer(game.betAmount);
-            game.taker.addr.transfer(game.betAmount);
-        } else {
-            if (game.creator.status == WIN) {
-                game.creator.addr.transfer(game.betAmount * 2);
-            } else if (game.taker.status == WIN) {
-                game.taker.addr.transfer(game.betAmount * 2);
-            } else {
-                game.creator.addr.transfer(game.betAmount);
-                game.taker.addr.transfer(game.betAmount);
+    
+    function existingBet(uint256 _id) public view returns(bool) {
+        for(uint i = 0; i < bets.length; i++) {
+            if(_id == bets[i].id) return true;
+        } return false;
+    }
+    
+    function getPlayersBySide(uint256 _id, uint256 _side) public view returns(address payable[] memory) {
+        require(existingBet(_id), "Bet doesn't exist.");
+        
+        for(uint i = 0; i < bets.length; i++) {
+            if(bets[i].id == _id)
+                if(_side == 1)
+                    return bets[i].side1.players;
+                    
+                if(_side == 2)
+                    return bets[i].side2.players;
+        }
+    }
+    
+    function getPlayerByBet(uint256 _id, address _addr) public view returns(bool){
+        address payable[] memory players;
+        players = getPlayersBySide(_id, 1);
+        
+        for(uint i = 0; i < players.length; i++)
+            if(players[i] == _addr)
+                return true;
+        
+        players = getPlayersBySide(_id, 2);
+        
+        for(uint i = 0; i < players.length; i++)
+            if(players[i] == _addr)
+                return true;
+            
+        return false;
+    }
+    
+    function getBetBySide(uint256 _side) public view returns(uint256) {
+        for(uint i = 0; i < bets.length; i++) {
+            if(_side == 1)
+                return bets[i].id;
+                    
+            if(_side == 2)
+                return bets[i].id;
+        }
+    }
+    
+    function participateToBet(uint256 _id, uint256 _side) public payable returns(uint256){
+        require(msg.value == 1 ether, "Mise non respecté");
+        require(existingBet(_id), "Bet doesn't exist.");
+        require(!getPlayerByBet(_id, msg.sender), "vous avez déjà participé");
+        for(uint i = 0; i < bets.length; i++) {
+            if(bets[i].id == _id) {
+                if(_side == 1)
+                    bets[i].side1.players.push(msg.sender);
+                
+                if(_side == 2)
+                    bets[i].side1.players.push(msg.sender);
             }
         }
     }
-
-    function checkPermissions(address sender) view private {
-        //only the creator or taker can call this function
-        require(sender == game.creator.addr || sender == game.taker.addr);
-    }
-
-    function getBetAmount() public view returns(uint) {
-        checkPermissions(msg.sender);
-        return game.betAmount;
-    }
-
-    function getCreatorGuess() public view returns(uint) {
-        checkPermissions(msg.sender);
-        return game.creator.guess;
-    }
-
-    function getTakerGuess() public view returns(uint) {
-        checkPermissions(msg.sender);
-        return game.taker.guess;
-    }
-
-    function getPot() public view returns(uint256) {
-        checkPermissions(msg.sender);
-        return address(this).balance;
-    }
-
-    function generateBetOutcome() private {
-        //todo - not a great way to generate a random number but ok for now
-        game.outcome = uint(blockhash(block.number - 1)) % 10 + 1;
-        game.status = COMPLETE;
-
-        if (game.creator.guess == game.taker.guess) {
-            game.creator.status = TIE;
-            game.taker.status = TIE;
-        } else if (game.creator.guess > game.outcome && game.taker.guess > game.outcome) {
-            game.creator.status = TIE;
-            game.taker.status = TIE;
-        } else {
-            if ((game.outcome - game.creator.guess) < (game.outcome - game.taker.guess)) {
-                game.creator.status = WIN;
-                game.taker.status = LOSE;
-            } else if ((game.outcome - game.taker.guess) < (game.outcome - game.creator.guess)) {
-                game.creator.status = LOSE;
-                game.taker.status = WIN;
-            } else {
-                game.creator.status = ERROR;
-                game.taker.status = ERROR;
-                game.status = ERROR;
-            }
-        }
-    }
-
-    function getBetOutcome() public view returns(string memory description, string memory creatorKey, uint creatorStatus, string memory takerKey, uint takerStatus) {
-        if (game.creator.status == TIE || game.taker.status == TIE) {
-            description = "Both bets were the same or were over the number, the pot will be split";
-        } else {
-            if (game.creator.status == WIN) {
-                description = "Bet creator guess was closer to the number and will receive the pot";
-            } else if (game.taker.status == WIN) {
-                description = "Bet taker guess was closer to the number and will receive the pot";
-            } else {
-                description = "Unknown Bet Outcome";
-            }
-        }
-        creatorKey = "creator";
-        creatorStatus = game.creator.status;
-        takerKey = "taker";
-        takerStatus = game.taker.status;
+    
+    function pickWinner() public payable returns(uint256) {
+        
     }
 }
