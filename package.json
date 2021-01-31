@@ -12,6 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bootstrap": "^4.5.3",
+    "jquery": "^3.5.1",
+    "react-bootstrap": "^1.4.3",
     "sjcl": "^1.0.8",
     "truffle-hdwallet-provider": "^1.0.17"
   }

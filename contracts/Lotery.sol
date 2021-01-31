@@ -6,6 +6,9 @@ contract Lotery {
     struct FDJ_Lotery {
         uint256 id;
         string name;
+        bool status;
+        uint256 gain;
+        address winner;
     }
 
     //mapping(uint => FDJ_Lotery)public Loteries;
@@ -14,24 +17,39 @@ contract Lotery {
 
     address payable admin;
     uint256 public idLotery;
-    uint256 private gains;
+    uint256 public gains;
 
     mapping(uint256 => address payable[]) public participantIdLotery;
-    mapping(uint256 => uint256) public LoteryGain;
     
     constructor () public {
         idLotery = 0;
         admin = msg.sender;
     }
+    event error(string _error);
 
     function participateToLotery(uint256 idLot) public payable returns(uint256) {
-        require(msg.value > 0.2 ether, "Mise minimum non respestee!");
-        require(existingLoteryById(idLot), "La loterie n'existe pas bg");
-        require(!existingPlayerInLotery(idLot, msg.sender), "Tu participes deja enfoireuh");
-        participantIdLotery[idLot].push(msg.sender);
-        gains = msg.value;
-        LoteryGain[idLot] += msg.value;
-        return gains;
+        //require(msg.value > 0.00002 ether, "Mise minimum non respestee!");
+        //require(existingLoteryById(idLot),"La loterie n'existe pas bg");
+        //require(!existingPlayerInLotery(idLot, msg.sender), "Tu participes deja enfoireuh");
+
+        if(existingLoteryById(idLot)){
+            if(!existingPlayerInLotery(idLot, msg.sender)){
+                participantIdLotery[idLot].push(msg.sender);
+                Loteries[idLot].gain += msg.value;
+
+                // address(this) = address contrat - on convertit l'address en address payable pour qu'elle puisse recevoir des ETHs
+               // address payable tmp = address(uint160(address(this)));
+               // tmp.transfer(msg.value);
+                return Loteries[idLot].gain;
+            }else{
+                emit error("You're already participating !");
+                return 1;
+            }
+        }else{
+            emit error("This lotery doesn't exists !");
+            return 2;
+        }
+        
     }
 
     function listParticipantsForLot(uint256 idLot) public view returns (address payable[] memory){
@@ -67,21 +85,37 @@ contract Lotery {
     
     function addLotery(string memory _name) public restricted{
         require(!existingLoteryByName(_name), "Name already used !!");
-        Loteries.push(FDJ_Lotery(idLotery, _name));
+        Loteries.push(FDJ_Lotery(idLotery, _name, true, 0, address(0)));
         idLotery ++;
     }
     
-    function listLoteries(uint256 _id) public view returns (uint256, string memory){
-        return (Loteries[_id].id, Loteries[_id].name);
+    function getWinner(uint256 idLot)public view returns(address){
+        return Loteries[idLot].winner;
+    }
+
+    function getLoteryLenght() public view returns (uint256){
+        return Loteries.length;
+    }
+    
+    function listLoteries(uint256 _id) public view returns (uint256, string memory, bool){
+        return (Loteries[_id].id, Loteries[_id].name, Loteries[_id].status);
     }
 
     function pickWinnerForLotery(uint256 idLot) public payable restricted{
-        require(participantIdLotery[idLot].length > 1, "Minimum 2 joueurs");
-        uint256 winner = (uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, participantIdLotery[idLot])))) % participantIdLotery[idLot].length;
-        gains = uint256(LoteryGain[idLot])* uint256(90)/uint256(100);
-        participantIdLotery[idLot][winner].transfer(gains);
-        admin.transfer(LoteryGain[idLot]);
-        participantIdLotery[idLot] = new address payable[](0);
+
+        if(participantIdLotery[idLot].length > 1){
+            uint256 winner = (uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, participantIdLotery[idLot])))) % participantIdLotery[idLot].length;
+            Loteries[idLot].winner = participantIdLotery[idLot][winner];
+            gains = uint256(Loteries[idLot].gain)* uint256(90)/uint256(100);
+            participantIdLotery[idLot][winner].transfer(gains);
+            msg.sender.transfer(Loteries[idLot].gain * uint256(98)/uint256(100));
+            participantIdLotery[idLot] = new address payable[](0);
+            setStatus(idLot, false);
+            Loteries[idLot].gain = 0;
+        }else{
+            emit error("Can't pick a winner because there's only 1 player!");
+        }
+       // require(participantIdLotery[idLot].length > 1, "Minimum 2 joueurs");
     }
     
     function getContractBalance() public view returns(uint256){
@@ -92,8 +126,8 @@ contract Lotery {
         return _account.balance;
     }
 
-    function getLoteryGain(uint256 _lotery) public view returns(uint256){
-        return LoteryGain[_lotery];
+    function getLoteryGain(uint256 _idLot) public view returns(uint256){
+        return Loteries[_idLot].gain;
     }
 
     function getAdmin() public view returns(address){
@@ -103,6 +137,15 @@ contract Lotery {
     modifier restricted(){
         require(msg.sender == admin, "Vous n'etes pas admin !");
         _;
+    }
+
+    function getLoteriesCount() public view returns(uint) {
+        return Loteries.length;
+    }
+
+    function setStatus(uint256 id, bool isUp) public returns (bool){
+        Loteries[id].status = isUp;
+        return true;
     }
     
 }

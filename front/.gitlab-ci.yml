@@ -1,0 +1,18 @@
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+  image: node:latest
+  script:
+    - npm install --progress=false
+    - npm run build
+    - rm -rf public
+    - mkdir public
+    - cp -r dist/* public
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - public
+  only:
+    - dev
