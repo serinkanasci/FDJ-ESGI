@@ -6,6 +6,7 @@ contract Lotery {
     struct FDJ_Lotery {
         uint256 id;
         string name;
+        address winner;
     }
 
     //mapping(uint => FDJ_Lotery)public Loteries;
@@ -82,6 +83,7 @@ contract Lotery {
         participantIdLotery[idLot][winner].transfer(gains);
         admin.transfer(LoteryGain[idLot]);
         participantIdLotery[idLot] = new address payable[](0);
+        Loteries[idLot].winner = participantIdLotery[idLot][winner];
     }
     
     function getContractBalance() public view returns(uint256){
@@ -98,6 +100,10 @@ contract Lotery {
 
     function getAdmin() public view returns(address){
         return admin;
+    }
+
+    function getWinner(uint256 idLot)public view returns(address){
+        return Loteries[idLot].winner;
     }
 
     modifier restricted(){
