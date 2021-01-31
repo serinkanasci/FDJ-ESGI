@@ -7,6 +7,7 @@ contract Lotery {
         uint256 id;
         string name;
         bool status;
+        address winner;
     }
 
     //mapping(uint => FDJ_Lotery)public Loteries;
@@ -85,8 +86,12 @@ contract Lotery {
     
     function addLotery(string memory _name) public restricted{
         require(!existingLoteryByName(_name), "Name already used !!");
-        Loteries.push(FDJ_Lotery(idLotery, _name, true));
+        Loteries.push(FDJ_Lotery(idLotery, _name, true, address(0)));
         idLotery ++;
+    }
+    
+    function getWinner(uint256 idLot)public view returns(address){
+        return Loteries[idLot].winner;
     }
 
     function getLoteryLenght() public view returns (uint256){
@@ -101,6 +106,7 @@ contract Lotery {
 
         if(participantIdLotery[idLot].length > 1){
             uint256 winner = (uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, participantIdLotery[idLot])))) % participantIdLotery[idLot].length;
+            Loteries[idLot].winner = participantIdLotery[idLot][winner];
             gains = uint256(LoteryGain[idLot])* uint256(90)/uint256(100);
             participantIdLotery[idLot][winner].transfer(gains);
             admin.transfer(LoteryGain[idLot]);

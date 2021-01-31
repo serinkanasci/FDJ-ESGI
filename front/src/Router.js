@@ -4,6 +4,7 @@ import AppHeader from "./layout/AppHeader";
 import AppFooter from "./layout/AppFooter";
 import Home from "./views/Home";
 import Lotery from "./views/Lotery";
+import Pari from "./views/Pari";
 
 
 Vue.use(Router);
@@ -31,6 +32,15 @@ export default new Router({
             components: {
                 header: AppHeader,
                 default: Lotery,
+                footer: AppFooter
+            }
+        },
+        {
+            path: "/pari",
+            name: "pari",
+            components: {
+                header: AppHeader,
+                default: Pari,
                 footer: AppFooter
             }
         },

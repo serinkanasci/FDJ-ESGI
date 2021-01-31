@@ -3,49 +3,26 @@
     class="font-sans bg-white text-center flex justify-between items-center my-4 mx-auto container overflow-hidden"
   >
     <ul class="text-sm text-gray-700 list-none p-0 flex items-center">
-      <li>
+            <li>
         <a
-          href="#"
+          href="Home"
           class="inline-block py-2 px-3 text-gray-900 hover:text-gray-700 no-underline"
-          >Products</a
+          >Home</a
         >
       </li>
       <li>
         <a
-          href="#"
+          href="Lotery"
           class="inline-block py-2 px-3 text-gray-900 hover:text-gray-700 no-underline"
-          >Pricing</a
+          >Loterie</a
         >
       </li>
       <li>
         <a
-          href="#"
+          href="Pari"
           class="inline-block py-2 px-3 text-gray-900 hover:text-gray-700 no-underline"
-          >About Us</a
+          >Pari</a
         >
-      </li>
-      <li>
-        <a
-          href="#"
-          class="inline-block py-2 px-3 text-gray-900 hover:text-gray-700 no-underline"
-          >Status</a
-        >
-      </li>
-    </ul>
-    <ul class="text-sm text-gray-700 list-none p-0 flex items-center">
-      <li>
-        <a
-          href="#"
-          class="inline-block py-2 px-3 text-gray-900 hover:text-gray-700 no-underline"
-          >Log In</a
-        >
-      </li>
-      <li>
-        <button
-          class="bg-black hover:bg-text-gray-800 text-white ml-4 py-2 px-3"
-        >
-          Sign Up
-        </button>
       </li>
     </ul>
   </nav>

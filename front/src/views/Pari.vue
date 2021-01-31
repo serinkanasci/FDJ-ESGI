@@ -4,11 +4,10 @@
       <div class="max-w-xl mx-auto text-center">
         <h2 class="mb-4 text-3xl lg:text-4xl font-bold font-heading">
           <span>User actual money : {{ currentBalance }} </span>
-          <span class="text-blue-600">ETH</span>
+          <span class="text-blue-600">Wei</span>
         </h2>
         <p class="mb-8 text-blueGray-400">Adresse courante : {{ account }}</p>
-        <p class="mb-8 text-blueGray-400">Adresse admin : {{ admin }}</p>
-        <div v-if="account == admin" class="flex flex-wrap max-w-lg mx-auto">
+        <div class="flex flex-wrap max-w-lg mx-auto">
           <div
               class="flex w-full md:w-2/3 px-3 mb-3 md:mb-0 md:mr-6 bg-blueGray-100 rounded"
           >
@@ -31,20 +30,10 @@
     </div>
     <section class="py-20 xl:bg-contain bg-top bg-no-repeat" style="background-image: url('metis-assets/backgrounds/intersect.svg');">
       <div class="container px-4 mx-auto">
-    <h2 class="mb-4 text-3xl lg:text-4xl font-bold font-heading">
-      <span class="text-blue-600">Les loteries en cours ...</span>
-    </h2>
+
     <div v-for="lotery in loadedLoteries" :key="lotery[0]" class="flex flex-wrap max-w-5xl mx-auto mb-6">
-      <RenderLot :account="account" :admin="admin" :loteryAbi="loteryAbi" :data="lotery" :loteryWin="loteriesWin"/>
+      <RenderLot :account="account" :loteryAbi="loteryAbi" :data="lotery" :loteryWin="loteriesWin"/>
     </div>
-
-    <h2 class="mb-4 text-3xl lg:text-4xl font-bold font-heading">
-    <span class="text-blue-600">Les loteries terminées</span>
-    </h2>
-    <div v-for="lotery in loadedLoteries" :key="lotery[0] + 'x'" class="flex flex-wrap max-w-5xl mx-auto mb-6">
-      <RenderOverLot :account="account" :loteryAbi="loteryAbi" :data="lotery" :loteryWin="loteriesWin"/>
-    </div>
-
     </div>
     </section>
   </section>
@@ -53,13 +42,12 @@
 <script>
 
 import RenderLot from "@/views/components/Lotery/renderLot";
-import RenderOverLot from "@/views/components/Lotery/renderOverLot";
 import LoteryContract from '../abis/Lotery.json';
 import Web3 from 'web3';
 
 export default {
   name: "Lotery",
-  components: {RenderLot, RenderOverLot},
+  components: {RenderLot},
 
   data() {
     return {
