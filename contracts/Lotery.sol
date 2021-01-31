@@ -68,7 +68,7 @@ contract Lotery {
     
     function addLotery(string memory _name) public restricted{
         require(!existingLoteryByName(_name), "Name already used !!");
-        Loteries.push(FDJ_Lotery(idLotery, _name));
+        Loteries.push(FDJ_Lotery(idLotery, _name, "0x0"));
         idLotery ++;
     }
     
