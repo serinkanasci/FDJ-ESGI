@@ -7,6 +7,7 @@ contract Lotery {
         uint256 id;
         string name;
         bool status;
+        uint256 gain;
         address winner;
     }
 
@@ -16,10 +17,9 @@ contract Lotery {
 
     address payable admin;
     uint256 public idLotery;
-    uint256 private gains;
+    uint256 public gains;
 
     mapping(uint256 => address payable[]) public participantIdLotery;
-    mapping(uint256 => uint256) public LoteryGain;
     
     constructor () public {
         idLotery = 0;
@@ -35,13 +35,12 @@ contract Lotery {
         if(existingLoteryById(idLot)){
             if(!existingPlayerInLotery(idLot, msg.sender)){
                 participantIdLotery[idLot].push(msg.sender);
-                gains += msg.value;
-                LoteryGain[idLot] += msg.value;
+                Loteries[idLot].gain += msg.value;
 
                 // address(this) = address contrat - on convertit l'address en address payable pour qu'elle puisse recevoir des ETHs
                // address payable tmp = address(uint160(address(this)));
                // tmp.transfer(msg.value);
-                return gains;
+                return Loteries[idLot].gain;
             }else{
                 emit error("You're already participating !");
                 return 1;
@@ -86,7 +85,7 @@ contract Lotery {
     
     function addLotery(string memory _name) public restricted{
         require(!existingLoteryByName(_name), "Name already used !!");
-        Loteries.push(FDJ_Lotery(idLotery, _name, true, address(0)));
+        Loteries.push(FDJ_Lotery(idLotery, _name, true, 0, address(0)));
         idLotery ++;
     }
     
@@ -107,11 +106,12 @@ contract Lotery {
         if(participantIdLotery[idLot].length > 1){
             uint256 winner = (uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, participantIdLotery[idLot])))) % participantIdLotery[idLot].length;
             Loteries[idLot].winner = participantIdLotery[idLot][winner];
-            gains = uint256(LoteryGain[idLot])* uint256(90)/uint256(100);
+            gains = uint256(Loteries[idLot].gain)* uint256(90)/uint256(100);
             participantIdLotery[idLot][winner].transfer(gains);
-            admin.transfer(LoteryGain[idLot]);
+            msg.sender.transfer(Loteries[idLot].gain * uint256(98)/uint256(100));
             participantIdLotery[idLot] = new address payable[](0);
             setStatus(idLot, false);
+            Loteries[idLot].gain = 0;
         }else{
             emit error("Can't pick a winner because there's only 1 player!");
         }
@@ -126,8 +126,8 @@ contract Lotery {
         return _account.balance;
     }
 
-    function getLoteryGain(uint256 _lotery) public view returns(uint256){
-        return LoteryGain[_lotery];
+    function getLoteryGain(uint256 _idLot) public view returns(uint256){
+        return Loteries[_idLot].gain;
     }
 
     function getAdmin() public view returns(address){

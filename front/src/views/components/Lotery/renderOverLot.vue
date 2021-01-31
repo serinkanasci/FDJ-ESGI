@@ -27,7 +27,7 @@ export default {
   methods: {
     async getWinner(){
       console.log(this.data)
-      await this.loteryAbi.methods.getWinner(this.data[0]).send({ from: this.account })
+      await this.loteryAbi.methods.getWinner(this.data[0]).call()
     }
   }
 };
