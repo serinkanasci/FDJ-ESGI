@@ -89,8 +89,8 @@ contract Lotery {
         idLotery ++;
     }
     
-    function getWinner(uint256 idLot)public view returns(address){
-        return Loteries[idLot].winner;
+    function getWinner(uint256 _idLot)public view returns(address){
+        return Loteries[_idLot].winner;
     }
 
     function getLoteryLenght() public view returns (uint256){
