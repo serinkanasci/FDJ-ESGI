@@ -9,7 +9,7 @@
                 <p class="text-blue-600">Gain loterie : {{this.loteryWin[this.data[0]]}}</p>
               </div>
             </div>
-            <p class="leading-loose text-blueGray-400">Description                                                                   </p>
+            <p class="leading-loose text-blueGray-400">Description</p>
             <br/>
             <a  v-on:click="participate" class="bg-blue-500 rounded-lg font-bold text-white text-center px-4 py-3 transition duration-300 ease-in-out hover:bg-blue-600 mr-6">
               Participer !

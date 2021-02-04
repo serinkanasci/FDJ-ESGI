@@ -1,139 +1,246 @@
-// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.5.0 <0.8.0;
 
-contract Bets {
+import "math.sol";
 
-    //bet status
-    uint constant STATUS_WIN = 1;
-    uint constant STATUS_LOSE = 2;
-    uint constant STATUS_TIE = 3;
-    uint constant STATUS_PENDING = 4;
-
-    //game status
-    uint constant STATUS_NOT_STARTED = 1;
-    uint constant STATUS_STARTED = 2;
-    uint constant STATUS_COMPLETE = 3;
-    uint constant STATUS_ERROR = 4;
-
-    //better struct
-    struct Better {
-        uint guess;
-        address addr;
-        uint status;
+contract Bets_test {
+    uint256 idBet;
+    address payable admin;
+    address payable[] winners;
+    
+    event error(string _error);
+    
+    //status
+    uint256 constant WIN = 1;
+    uint256 constant LOSE = 2;
+    uint256 constant TIE = 3;
+    uint256 constant PENDING = 4;
+    
+    //team
+    struct Side {
+        string name;
+        uint256 status;
+        uint256 amount;
+        address payable[] players;
+        
     }
-
-    //game struct
-    struct Game {
-        uint256 betAmount;
-        uint outcome;
-        uint status;
-        Better originator;
-        Better taker;
+    
+    //bet
+    struct Bet {
+        uint256 id;
+        Side side1;
+        Side side2;
     }
+    
+    //all bets
+    Bet[] bets;
+    address payable admin;
 
-    //game
-    Game game;
-
-    //fallback function
-    receive() external payable {}
-
-    function createBet(uint _guess) public payable {
-        game = Game(msg.value, 0, STATUS_STARTED, Better(_guess, msg.sender, STATUS_PENDING), Better(0, address(0), STATUS_NOT_STARTED));
-        game.originator = Better(_guess, msg.sender, STATUS_PENDING);
+    constructor() public{
+        idBet = 0;
+        admin = msg.sender;
+        
     }
-
-    function takeBet(uint _guess) public payable {
-        //same bet amount plz
-        require(msg.value == game.betAmount);
-        game.taker = Better(_guess, msg.sender, STATUS_PENDING);
-        generateBetOutcome();
+    
+    
+    //creating bet
+    function createBet(string memory nameSide1, string memory nameSide2) public {
+        address payable[] memory players;
+        //creating teams
+        Side memory side1 = Side(nameSide1, PENDING, 0, players);
+        Side memory side2 = Side(nameSide2, PENDING, 0, players);
+        //creation bet
+        Bet memory bet = Bet(idBet, side1, side2);
+        //add bet to all bets
+        bets.push(bet);
+        idBet++;
     }
+    
+    //verify if bet exists
+    function existingBet(uint256 _id) public view returns(bool) {
+        for(uint i = 0; i < bets.length; i++) {
+            if(_id == bets[i].id) return true;
+        } return false;
+    }
+    
+    //get players by team
+    function getPlayersBySide(uint256 _id, uint256 _side) public view returns(address payable[] memory) {
+        //verify if bet exists
+        if(!existingBet(_id)){
+            emit error("Bet doesn't exist.");
+            return [];
+        }
+        
+        //looping on all bets
+        for(uint i = 0; i < bets.length; i++) {
+            if(bets[i].id == _id)
+                if(_side == 1)
+                    return bets[i].side1.players;
+                    
+                if(_side == 2)
+                    return bets[i].side2.players;
+        }
+    }
+    
 
-    function payout() public payable {
-
-        checkPermissions(msg.sender);
-
-        if (game.originator.status == STATUS_TIE && game.taker.status == STATUS_TIE) {
-            game.originator.addr.transfer(game.betAmount);
-            game.taker.addr.transfer(game.betAmount);
-        } else {
-            if (game.originator.status == STATUS_WIN) {
-                game.originator.addr.transfer(game.betAmount * 2);
-            } else if (game.taker.status == STATUS_WIN) {
-                game.taker.addr.transfer(game.betAmount * 2);
-            } else {
-                game.originator.addr.transfer(game.betAmount);
-                game.taker.addr.transfer(game.betAmount);
+    //verify if player already in bet
+    function getPlayerByBet(uint256 _id, address _addr) public view returns(bool){
+        address payable[] memory players;
+        //get all players in bet
+        players = getPlayersBySide(_id, 1);
+        
+        //verify if player is not in bet
+        for(uint i = 0; i < players.length; i++)
+            if(players[i] == _addr)
+                return true;
+        
+        players = getPlayersBySide(_id, 2);
+        
+        for(uint i = 0; i < players.length; i++)
+            if(players[i] == _addr)
+                return true;
+            
+        return false;
+    }
+    
+    //returns all bets with specific side
+    function getBetBySide(uint256 _side) public view returns(uint256) {
+        for(uint i = 0; i < bets.length; i++) {
+                if(_side == 1)
+                    return bets[i].id;
+                if(_side == 2)
+                    return bets[i].id;
+        }
+        //return null;
+    }
+    
+    //add player to bet
+    function participateToBet(uint256 _id, uint256 _side) public payable returns(uint256){
+        //verify entry price
+        if(msg.value <= 1000000000000000000){
+            emit error("Mise non respecte");
+            return 1;
+        }    
+        
+        //verify if bet exists
+        if(!existingBet(_id)){
+            emit error("Bet doesn't exist.");
+            return 1;
+        }
+        
+        //verify if player doesn't already participate
+        if(!getPlayerByBet(_id, msg.sender)){
+            emit error("vous avez deja participe.");
+            return 1;
+        }
+        
+        //loop into all bets to add the player in the right one
+        for(uint i = 0; i < bets.length; i++) {
+            if(bets[i].id == _id) {
+                if(bets[i].side1.status == PENDING){
+                    if(_side == 1)
+                        bets[i].side1.players.push(msg.sender);
+                        bets[i].side1.amount += msg.value;
+                    
+                    if(_side == 2)
+                        bets[i].side2.players.push(msg.sender);
+                        bets[i].side2.amount += msg.value;
+                }
             }
         }
     }
-
-    function checkPermissions(address sender) view private {
-        //only the originator or taker can call this function
-        require(sender == game.originator.addr || sender == game.taker.addr);
-    }
-
-    function getBetAmount() public view returns(uint) {
-        checkPermissions(msg.sender);
-        return game.betAmount;
-    }
-
-    function getOriginatorGuess() public view returns(uint) {
-        checkPermissions(msg.sender);
-        return game.originator.guess;
-    }
-
-    function getTakerGuess() public view returns(uint) {
-        checkPermissions(msg.sender);
-        return game.taker.guess;
-    }
-
-    function getPot() public view returns(uint256) {
-        checkPermissions(msg.sender);
-        return this.balance;
-    }
-
-    function generateBetOutcome() private {
-        //todo - not a great way to generate a random number but ok for now
-        game.outcome = uint(block.blockhash(block.number - 1)) % 10 + 1;
-        game.status = STATUS_COMPLETE;
-
-        if (game.originator.guess == game.taker.guess) {
-            game.originator.status = STATUS_TIE;
-            game.taker.status = STATUS_TIE;
-        } else if (game.originator.guess > game.outcome && game.taker.guess > game.outcome) {
-            game.originator.status = STATUS_TIE;
-            game.taker.status = STATUS_TIE;
-        } else {
-            if ((game.outcome - game.originator.guess) < (game.outcome - game.taker.guess)) {
-                game.originator.status = STATUS_WIN;
-                game.taker.status = STATUS_LOSE;
-            } else if ((game.outcome - game.taker.guess) < (game.outcome - game.originator.guess)) {
-                game.originator.status = STATUS_LOSE;
-                game.taker.status = STATUS_WIN;
-            } else {
-                game.originator.status = STATUS_ERROR;
-                game.taker.status = STATUS_ERROR;
-                game.status = STATUS_ERROR;
+    
+    //get winners
+    function SetWinner(uint256 _id, uint256 _side, uint256 _status) public {
+        //verify if the sender is the admin
+        /*if(msg.sender == admin){
+            emit error("Vous n'etes pas administrateur");
+            return 1;
+        }*/
+        
+        //verify if the bet exists
+        if(_side != 1 || _side != 2){
+            emit error("L'equipe n'existe pas");
+            return 1;
+        }
+        
+        //verify if team
+        if(_status != 1 || _status != 2){
+            emit error("Le status n'existe pas");
+            return 1;
+        }
+        
+        //loop into all bets
+        for(uint i = 0; i < bets.length; i++) {
+            if(bets[i].id == _id) {
+                //verify if the bet is not already finish
+                if(bets[i].side1.status == PENDING && bets[i].side1.status == PENDING){
+                    if(_side == 1){
+                        
+                        //change team status
+                        bets[i].side1.status = _status;
+                        
+                        //set the winners array
+                        if(_status == 1){
+                            bets[i].side2.status = 2;
+                            winners = bets[i].side1.players;
+                        }
+                        
+                        bets[i].side1.status = 2;
+                        winners = bets[i].side2.players;
+                    }
+                    
+                    bets[i].side2.status = _status;
+                    
+                    if(_status == 1){
+                        bets[i].side1.status = 2;
+                        winners = bets[i].side2.players;
+                    }
+                    
+                    bets[i].side2.status = 2;
+                    winners =  bets[i].side1.players;
+                }
             }
         }
     }
-
-    function getBetOutcome() public view returns(string memory description, string memory originatorKey, uint originatorStatus, string memory takerKey, uint takerStatus) {
-        if (game.originator.status == STATUS_TIE || game.taker.status == STATUS_TIE) {
-            description = "Both bets were the same or were over the number, the pot will be split";
-        } else {
-            if (game.originator.status == STATUS_WIN) {
-                description = "Bet originator guess was closer to the number and will receive the pot";
-            } else if (game.taker.status == STATUS_WIN) {
-                description = "Bet taker guess was closer to the number and will receive the pot";
-            } else {
-                description = "Unknown Bet Outcome";
+    
+    //pay winners
+    function payWinners(uint256 _id, uint256 _side) public{
+        //verify if there is winners
+        if(winners == []){
+            emit error("Il n'y a pas de gagnants");
+            return 1;
+        }
+        
+        uint256 total;
+        float256 toPay;
+        
+        //add the amount to distribute
+        for(uint i = 0; i < bets.length; i++) {
+            if(bets[i].id == _id) {
+                total = bets[i].side1.amount;
+                total = bets[i].side2.amount;
             }
         }
-        originatorKey = "originator";
-        originatorStatus = game.originator.status;
-        takerKey = "taker";
-        takerStatus = game.taker.status;
+        
+        //devide the total amout by the number of players
+        toPay = total/winners.length;
+        //send to the winners the reward
+        for(uint i = 0; i < winners.length; i++) {
+            winners[i].transfer(toPay);
+        }
+        delete winners;
     }
+
+    function getAllBets() public view returns(uint256) {
+        uint256 count = 0;
+        for(uint i = 0; i < bets.length; i++) {
+          if(bets[i].side1.status == PENDING) count ++;
+        }
+    return count;
+    }
+
+    function getAdmin() public view returns (address){
+        return admin;
+    }
+
 }

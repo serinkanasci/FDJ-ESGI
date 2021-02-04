@@ -15,7 +15,13 @@
                 v-model="newLotName"
                 class="w-full pl-3 py-4 text-xs text-blueGray-400 font-semibold leading-none bg-blueGray-100 outline-none"
                 type="text"
-                placeholder="Nom de la lotterie"
+                placeholder="Nom de l'équipe 1"
+            ></textarea>
+            <textarea
+                v-model="newLotName"
+                class="w-full pl-3 py-4 text-xs text-blueGray-400 font-semibold leading-none bg-blueGray-100 outline-none"
+                type="text"
+                placeholder="Nom de l'équipe 2"
             ></textarea>
           </div>
           <button 
@@ -23,7 +29,7 @@
               class="w-full md:w-auto py-4 px-8 text-xs text-white font-semibold leading-none bg-blue-600 hover:bg-blue-700 rounded"
               type="submit"
           >
-            Ajout de lotterie
+            Ajout pari
           </button>
         </div>
       </div>
@@ -31,8 +37,8 @@
     <section class="py-20 xl:bg-contain bg-top bg-no-repeat" style="background-image: url('metis-assets/backgrounds/intersect.svg');">
       <div class="container px-4 mx-auto">
 
-    <div v-for="lotery in loadedLoteries" :key="lotery[0]" class="flex flex-wrap max-w-5xl mx-auto mb-6">
-      <RenderLot :account="account" :loteryAbi="loteryAbi" :data="lotery" :loteryWin="loteriesWin"/>
+    <div v-for="bet in loadedLoteries" :key="bet[0]" class="flex flex-wrap max-w-5xl mx-auto mb-6">
+      <RenderLot :account="account" :betAbi="betAbi" :data="bet" :betWin="betsWin"/>
     </div>
     </div>
     </section>
@@ -41,12 +47,12 @@
 
 <script>
 
-import RenderLot from "@/views/components/Lotery/renderLot";
-import LoteryContract from '../abis/Lotery.json';
+import RenderLot from "@/views/components/Pari/renderPari";
+import BetsContract from '../abis/Bets.json';
 import Web3 from 'web3';
 
 export default {
-  name: "Lotery",
+  name: "Bets",
   components: {RenderLot},
 
   data() {
@@ -54,14 +60,14 @@ export default {
       account: '0x0',
       admin: '0x0',
       currentBalance: 0,
-      loteryAbi: [],
-      loadedLoteries: [],
-      loteriesWin: [],
-      numberOfLoteries: 0,
+      betAbi: [],
+      loadedBets: [],
+      betsWin: [],
+      numberOfBets: 0,
       loading: true,
       isRendered: false,
-      createLoteryName : "",
-      newLotName : ""
+      createBetsName : "",
+      newBetName : ""
     };
   },
   async beforeMount(){
@@ -70,7 +76,7 @@ export default {
   },
   methods: {
     async addLot(){
-      await this.loteryAbi.methods.addLotery(this.newLotName).send({ from: this.account })
+      await this.betAbi.methods.addBets(this.newLotName).send({ from: this.account })
     },
     async loadWeb3(){
       // Setup Web3 si Metask est présent
@@ -101,14 +107,14 @@ export default {
       const netId = await web3.eth.net.getId()
 
       // On va chercher le contrat déployé sur le réseau 5777
-      const loteryContractData = LoteryContract.networks[netId]
+      const betsContractData = BetsContract.networks[netId]
 
       // Si on récupère quelque chose de non-vide, on créer le contrat sur web3 avec l'abi (présent dans le .json du contrat une fois compilé) et son adresse, puis on l'enregistre dans le state
-      if(loteryContractData){
-        const loteryContract = new web3.eth.Contract(LoteryContract.abi, loteryContractData.address)
-        this.loteryAbi = loteryContract
+      if(betsContractData){
+        const betContract = new web3.eth.Contract(BetsContract.abi, betContractData.address)
+        this.betAbi = betContract
       }else{
-        window.alert('Lotery smart contract has not been deployed to detected network')
+        window.alert('Bets smart contract has not been deployed to detected network')
       }
       try{  
         
@@ -117,26 +123,26 @@ export default {
         currentBalance = web3.utils.fromWei(currentBalance, 'ether')
         this.currentBalance = currentBalance
 
-        //On récupère combien il y a de loterie en cours
-        var res = await this.loteryAbi.methods.getLoteriesCount().call()
-        this.numberOfLoteries = res
+        //On récupère combien il y a de bet en cours
+        var res = await this.betAbi.methods.getAllBets().call()
+        this.numberOfBets = res
 
         /* Renvoie l'adresse de l'admin */
-        let admin = await this.loteryAbi.methods.getAdmin().call()
+        let admin = await this.betAbi.methods.getAdmin().call()
         this.admin = admin
 
-        /* Renvoie ID + nom d'une loterie */
+        /* Renvoie ID + nom d'un bet */
      
 
-        for (let i=0 ; i < this.numberOfLoteries; i++) {
-          var listLots = await this.loteryAbi.methods.listLoteries(i).call()
+        for (let i=0 ; i < this.numberOfBets; i++) {
+          var listLots = await this.betAbi.methods.listLoteries(i).call()
           this.loadedLoteries.push(listLots)
 
           // this.setState({loadedLoteries: this.loadedLoteries.concat(result6)})
 
-          var lotWin = await this.loteryAbi.methods.getLoteryGain(i).call()
-          this.loteriesWin.push(lotWin)
-          // this.setState({loteriesWin: this.loteriesWin.concat(win)})
+          var lotWin = await this.betAbi.methods.getBetsGain(i).call()
+          this.betsWin.push(lotWin)
+          // this.setState({betsWin: this.betsWin.concat(win)})
           // this.setState({loadedLoteries : this.loadedLoteries.push(result6)})
         }
      
