@@ -35,7 +35,7 @@ export default {
       await this.loteryAbi.methods.participateToLotery(this.data[0]).send({ from: this.account, value: 1000000000000000000})
     },
     async PickWinner(){
-      await this.loteryAbi.methods.pickWinnerForLotery(this.data[0]).send({ from: this.account })
+      await this.loteryAbi.methods.pickWinnerForLotery(this.data[0]).send({ from: this.account , value: this.loteryWin[this.data[0]]})
     }
   }
 };

@@ -42,7 +42,7 @@
     <span class="text-blue-600">Les loteries terminées</span>
     </h2>
     <div v-for="lotery in loadedLoteries" :key="lotery[0] + 'x'" class="flex flex-wrap max-w-5xl mx-auto mb-6">
-      <RenderOverLot :account="account" :loteryAbi="loteryAbi" :data="lotery" :loteryWin="loteriesWin"/>
+      <RenderOverLot :account="account" :admin="admin" :loteryAbi="loteryAbi" :data="lotery" :loteryWin="loteriesWin"/>
     </div>
 
     </div>
