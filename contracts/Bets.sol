@@ -6,6 +6,7 @@ contract Bets {
     address payable admin;
     address payable[] winners;
     uint256[] betsBySide;
+    string[] sideNames;
 
     event error(string _error);
 
@@ -33,7 +34,7 @@ contract Bets {
     // All bets
     Bet[] bets;
 
-    constructor() {
+    constructor() public {
         idBet = 0;
         admin = msg.sender;
     }
@@ -99,6 +100,24 @@ contract Bets {
                 betsBySide.push(bets[i].id);
             }
         }
+    }
+    
+    // Get bet sides with id
+    function getBetById(uint256 _id) public {
+        delete sideNames;
+        
+        sideNames.push(bets[_id].side1.name);
+        sideNames.push(bets[_id].side2.name);
+    }
+    
+    // Get all bets
+    function getAllBets() public view returns(uint256) {
+        uint256 countBets = 0;
+        
+        for(uint i = 0; i < bets.length; i++)
+            countBets++;
+            
+        return countBets;
     }
 
     // Add player to bet
