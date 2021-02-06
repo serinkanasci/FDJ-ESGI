@@ -6,7 +6,6 @@ contract Bets {
     address payable admin;
     address payable[] winners;
     uint256[] betsBySide;
-    string[] sideNames;
 
     event error(string _error);
 
@@ -102,12 +101,9 @@ contract Bets {
         }
     }
     
-    // Get bet sides with id
-    function getBetById(uint256 _id) public {
-        delete sideNames;
-        
-        sideNames.push(bets[_id].side1.name);
-        sideNames.push(bets[_id].side2.name);
+    // Get bet sides names with id
+    function getBetById(uint256 _id) public view returns(string memory, string memory) {
+        return(bets[_id].side1.name, bets[_id].side2.name);
     }
     
     // Get all bets
