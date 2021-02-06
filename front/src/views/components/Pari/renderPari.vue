@@ -2,20 +2,23 @@
           <div class="w-full md:w-1/2 px-3 mb-6">
           <div class="p-8 bg-white shadow rounded">
             <div class="flex items-center mb-4">
-              <img class="h-16 w-16 rounded-full object-cover" src="https://images.unsplash.com/photo-1556474835-b0f3ac40d4d1?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=60" alt="">
+              <img class="h-16 w-16 rounded-full object-cover" src="../../../assets/football.jpg" alt="">
               <div class="pl-4">
                 <p class="text-xl">Choisissez votre camp !</p>
-                
-               
-
                </div>
             </div>
-            <p class="leading-loose text-blueGray-400">Description</p>
+            <p class="leading-loose text-blueGray-400">La mise doit être supérieur à 1 ether :</p>
             <br/>
-            <a  v-on:click="participateTeamA" class="bg-blue-500 rounded-lg font-bold text-white text-center px-4 py-3 transition duration-300 ease-in-out hover:bg-blue-600 mr-6">
+            <textarea
+                v-model="mise"
+                class="w-full pl-3 py-4 text-xs text-blueGray-400 font-semibold leading-none bg-blueGray-100 outline-none"
+                type="text"
+                placeholder="Mise (<1 Ether svp)"
+            ></textarea>
+            <a  v-on:click="participateTeamA" class="flex items-center mb-4 bg-blue-500 rounded-lg font-bold text-white text-center px-4 py-3 transition duration-300 ease-in-out hover:bg-blue-600 mr-6">
                 {{data[0]}}
             </a>
-            <a  v-on:click="participateTeamB" class="bg-blue-500 rounded-lg font-bold text-white text-center px-4 py-3 transition duration-300 ease-in-out hover:bg-blue-600 mr-6">
+            <a  v-on:click="participateTeamB" class="flex items-center mb-4 bg-blue-500 rounded-lg font-bold text-white text-center px-4 py-3 transition duration-300 ease-in-out hover:bg-blue-600 mr-6">
                 {{data[1]}}
             </a>
           </div>
@@ -25,18 +28,24 @@
 
 <script>
 export default {
-  name: "renderLot",
-  props: ['data', 'account', 'betAbi','betsWin'],
+  name: "renderBet",
+  props: ['data', 'account', 'betAbi','betsWin','web3'],
   data() {
     return {
+      mise: 0,
+      miseToWei: 0
     };
   },
   methods: {
     async participateTeamA(){
-      await this.betAbi.methods.participateToBet(this.data[0], 1).send({ from: this.account, value: 1000000000000000000})
+      this.miseToWei = this.web3.utils.toWei(this.mise)
+      await this.betAbi.methods.participateToBet(this.data[2], 1).send({ from: this.account, value: this.miseToWei})
+       this.mise = 0
     },
     async participateTeamB(){
-      await this.betAbi.methods.participateToBet(this.data[0], 2).send({ from: this.account, value: 1000000000000000000})
+      this.miseToWei = this.web3.utils.toWei(this.mise)
+      await this.betAbi.methods.participateToBet(this.data[2], 2).send({ from: this.account, value: this.miseToWei})
+      this.mise = 0
     },
     async PickWinner(){
       // await this.props.loteryAbi.methods.pickWinnerForLotery(i).send({ from: this.props.account })

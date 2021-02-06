@@ -17,6 +17,7 @@
                 type="text"
                 placeholder="Nom de l'équipe 1"
             ></textarea>
+            <img class="h-16 w-16 rounded-full object-cover" src="../assets/vs.png" alt="">
             <textarea
                 v-model="newBetNameB"
                 class="w-full pl-3 py-4 text-xs text-blueGray-400 font-semibold leading-none bg-blueGray-100 outline-none"
@@ -38,7 +39,7 @@
       <div class="container px-4 mx-auto">
 
     <div v-for="bet in loadedBets" :key="bet[0]" class="flex flex-wrap max-w-5xl mx-auto mb-6">
-      <RenderLot :account="account" :betAbi="betAbi" :data="bet" :betWins="betsWin"/>
+      <RenderBet :account="account" :betAbi="betAbi" :data="bet" :betWins="betsWin" :web3="web3" />
     </div>
     </div>
     </section>
@@ -47,13 +48,13 @@
 
 <script>
 
-import RenderLot from "@/views/components/Pari/renderPari";
+import RenderBet from "@/views/components/Pari/renderPari";
 import BetsContract from '../abis/Bets.json';
 import Web3 from 'web3';
 
 export default {
   name: "Bets",
-  components: {RenderLot},
+  components: {RenderBet},
 
   data() {
     return {
@@ -68,7 +69,8 @@ export default {
       isRendered: false,
       createBetsName : "",
       newBetNameA : "",
-      newBetNameB : ""
+      newBetNameB : "",
+      web3: []
     };
   },
   async beforeMount(){
@@ -100,7 +102,7 @@ export default {
     async loadBlockchainData(){
       // URL Ganache
       const web3 = new Web3(window.ethereum);
-      
+      this.web3 = web3;
       const accounts = await web3.eth.getAccounts();
       this.account = accounts[0]
       

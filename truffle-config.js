@@ -1,5 +1,7 @@
-//var HDWalletProvider = require("truffle-hdwallet-provider");
+var HDWalletProvider = require("truffle-hdwallet-provider");
 const MNEMONIC = 'tank yard sunset again unveil morning black lottery polar absorb mix sight';
+
+const mnemonicRopsten = 'type attend loan kite debate liar board actual symbol speak year tourist'
 
 module.exports = {
   networks: {
@@ -7,6 +9,12 @@ module.exports = {
 	    host: "127.0.0.1",     // LOCALHOST (DEFAULT: NONE)
 	    port: 7545,            // STANDARD ETHEREUM PORT (DEFAULT: NONE)
 	    network_id: 5777       // ANY NETWORK (DEFAULT: NONE)
+    },
+    ropsten: {
+      provider: function() {
+        return new HDWalletProvider(mnemonicRopsten, "https://ropsten.infura.io/v3/990e0585b0d244059dfccaaaf98a74b5")
+      },
+      network_id: 3
     }
   },
   ///contracts_directory: '.front/src/contracts/',

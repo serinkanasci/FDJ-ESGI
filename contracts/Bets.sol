@@ -101,8 +101,8 @@ contract Bets {
     }
     
     // Get bet sides names with id
-    function getBetById(uint256 _id) public view returns(string memory, string memory) {
-        return(bets[_id].side1.name, bets[_id].side2.name);
+    function getBetById(uint256 _id) public view returns(string memory, string memory, uint256) {
+        return(bets[_id].side1.name, bets[_id].side2.name,_id);
     }
     
     // Get all bets
@@ -117,23 +117,25 @@ contract Bets {
 
     // Add player to bet
     function participateToBet(uint256 _id, uint256 _side) public payable returns(bool) {
-        // Verify entry price
-        if(msg.value <= 1000000000000000000) {
+        /*if(msg.value <= 1000000000000000000) {
             emit error("Wrong entry price.");
             return false;
-        }
+        }*/
+        require(msg.value <= 1 wei, "Wrong entry price.");
 
         // Verify if bet exists
-        if(!existingBet(_id)){
+        /*if(!existingBet(_id)){
             emit error("Bet doesn't exists.");
             return false;
-        }
+        }*/
+        require(!existingBet(_id), "Bet doesn't exists.");
 
         // Verify if player is in bet
-        if(!getPlayerByBet(_id, msg.sender)){
+        /*if(!getPlayerByBet(_id, msg.sender)){
             emit error("Already in.");
             return false;
-        }
+        }*/
+        require(!getPlayerByBet(_id, msg.sender), "Already in.");
 
         for(uint i = 0; i < bets.length; i++) {
             if(bets[i].id == _id) {
