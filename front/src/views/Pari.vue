@@ -7,7 +7,8 @@
           <span class="text-blue-600">Ether</span>
         </h2>
         <p class="mb-8 text-blueGray-400">Adresse courante : {{ account }}</p>
-        <div class="flex flex-wrap max-w-lg mx-auto">
+        <p class="mb-8 text-blueGray-400">Adresse admin : {{ admin }}</p>
+        <div v-if="account == admin" class="flex flex-wrap max-w-lg mx-auto">
           <div
               class="flex w-full md:w-2/3 px-3 mb-3 md:mb-0 md:mr-6 bg-blueGray-100 rounded"
           >
@@ -38,9 +39,21 @@
     <section class="py-20 xl:bg-contain bg-top bg-no-repeat" style="background-image: url('metis-assets/backgrounds/intersect.svg');">
       <div class="container px-4 mx-auto">
 
+    <h2 class="mb-4 text-3xl lg:text-4xl font-bold font-heading">
+      <span class="text-blue-600">Les paris en cours ...</span>
+    </h2>
     <div v-for="bet in loadedBets" :key="bet[0]" class="flex flex-wrap max-w-5xl mx-auto mb-6">
-      <RenderBet :account="account" :betAbi="betAbi" :data="bet" :betWins="betsWin" :web3="web3" />
+      <RenderBet :account="account" :admin="admin" :betAbi="betAbi" :data="bet" :betWins="betsWin" :web3="web3" />
     </div>
+
+    <h2 class="mb-4 text-3xl lg:text-4xl font-bold font-heading">
+    <span class="text-blue-600">Les paris terminés</span>
+    </h2>
+    <div v-for="bet in loadedBets" :key="bet[0] + 'x'" class="flex flex-wrap max-w-5xl mx-auto mb-6">
+      <RenderBetOver :account="account" :admin="admin" :betAbi="betAbi" :data="bet" :betWins="betsWin" :web3="web3" />
+    </div>
+
+
     </div>
     </section>
   </section>
@@ -49,12 +62,13 @@
 <script>
 
 import RenderBet from "@/views/components/Pari/renderPari";
+import RenderBetOver from "@/views/components/Pari/renderPariOver";
 import BetsContract from '../abis/Bets.json';
 import Web3 from 'web3';
 
 export default {
   name: "Bets",
-  components: {RenderBet},
+  components: {RenderBet, RenderBetOver},
 
   data() {
     return {
@@ -128,6 +142,9 @@ export default {
         let currentBalance = await web3.eth.getBalance(this.account);
         currentBalance = web3.utils.fromWei(currentBalance, 'ether')
         this.currentBalance = currentBalance
+
+        let admin = await this.betAbi.methods.getAdmin().call()
+        this.admin = admin
 
         //On récupère combien il y a de bet en cours
         var res = await this.betAbi.methods.getAllBets().call()

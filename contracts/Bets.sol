@@ -101,8 +101,8 @@ contract Bets {
     }
     
     // Get bet sides names with id
-    function getBetById(uint256 _id) public view returns(string memory, string memory, uint256) {
-        return(bets[_id].side1.name, bets[_id].side2.name,_id);
+    function getBetById(uint256 _id) public view returns(string memory, string memory, uint256, uint256, uint256) {
+        return(bets[_id].side1.name, bets[_id].side2.name,_id, bets[_id].side2.status, bets[_id].side1.status);
     }
     
     // Get all bets
@@ -213,10 +213,10 @@ contract Bets {
         uint256 winnerAmount;
 
         // Verify if there is winners
-        if(winners.length == 0) {
-            emit error("No winners.");
-            return false;
-        }
+        // if(winners.length == 0) {
+        //     emit error("No winners.");
+        //     return false;
+        // }
 
         // Total amount
         for(uint i = 0; i < bets.length; i++) {
@@ -236,5 +236,9 @@ contract Bets {
         delete winners;
 
         return true;
+    }
+
+    function getAdmin() public view returns(address){
+        return admin;
     }
 }
