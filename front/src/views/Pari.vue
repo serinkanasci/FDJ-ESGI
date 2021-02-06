@@ -4,7 +4,7 @@
       <div class="max-w-xl mx-auto text-center">
         <h2 class="mb-4 text-3xl lg:text-4xl font-bold font-heading">
           <span>User actual money : {{ currentBalance }} </span>
-          <span class="text-blue-600">Wei</span>
+          <span class="text-blue-600">Ether</span>
         </h2>
         <p class="mb-8 text-blueGray-400">Adresse courante : {{ account }}</p>
         <div class="flex flex-wrap max-w-lg mx-auto">
@@ -12,20 +12,20 @@
               class="flex w-full md:w-2/3 px-3 mb-3 md:mb-0 md:mr-6 bg-blueGray-100 rounded"
           >
             <textarea
-                v-model="newLotName"
+                v-model="newBetNameA"
                 class="w-full pl-3 py-4 text-xs text-blueGray-400 font-semibold leading-none bg-blueGray-100 outline-none"
                 type="text"
                 placeholder="Nom de l'équipe 1"
             ></textarea>
             <textarea
-                v-model="newLotName"
+                v-model="newBetNameB"
                 class="w-full pl-3 py-4 text-xs text-blueGray-400 font-semibold leading-none bg-blueGray-100 outline-none"
                 type="text"
                 placeholder="Nom de l'équipe 2"
             ></textarea>
           </div>
           <button 
-              v-on:click="addLot"
+              v-on:click="addBets"
               class="w-full md:w-auto py-4 px-8 text-xs text-white font-semibold leading-none bg-blue-600 hover:bg-blue-700 rounded"
               type="submit"
           >
@@ -37,8 +37,8 @@
     <section class="py-20 xl:bg-contain bg-top bg-no-repeat" style="background-image: url('metis-assets/backgrounds/intersect.svg');">
       <div class="container px-4 mx-auto">
 
-    <div v-for="bet in loadedLoteries" :key="bet[0]" class="flex flex-wrap max-w-5xl mx-auto mb-6">
-      <RenderLot :account="account" :betAbi="betAbi" :data="bet" :betWin="betsWin"/>
+    <div v-for="bet in loadedBets" :key="bet[0]" class="flex flex-wrap max-w-5xl mx-auto mb-6">
+      <RenderLot :account="account" :betAbi="betAbi" :data="bet" :betWins="betsWin"/>
     </div>
     </div>
     </section>
@@ -67,16 +67,19 @@ export default {
       loading: true,
       isRendered: false,
       createBetsName : "",
-      newBetName : ""
+      newBetNameA : "",
+      newBetNameB : ""
     };
   },
   async beforeMount(){
     await this.loadWeb3();
     await this.loadBlockchainData();
+    console.log(this.betAbi)
+
   },
   methods: {
-    async addLot(){
-      await this.betAbi.methods.addBets(this.newLotName).send({ from: this.account })
+    async addBets(){
+      await this.betAbi.methods.createBet(this.newBetNameA, this.newBetNameB).send({ from: this.account })
     },
     async loadWeb3(){
       // Setup Web3 si Metask est présent
@@ -111,8 +114,9 @@ export default {
 
       // Si on récupère quelque chose de non-vide, on créer le contrat sur web3 avec l'abi (présent dans le .json du contrat une fois compilé) et son adresse, puis on l'enregistre dans le state
       if(betsContractData){
-        const betContract = new web3.eth.Contract(BetsContract.abi, betContractData.address)
+        const betContract = new web3.eth.Contract(BetsContract.abi, betsContractData.address)
         this.betAbi = betContract
+        
       }else{
         window.alert('Bets smart contract has not been deployed to detected network')
       }
@@ -127,28 +131,18 @@ export default {
         var res = await this.betAbi.methods.getAllBets().call()
         this.numberOfBets = res
 
-        /* Renvoie l'adresse de l'admin */
-        let admin = await this.betAbi.methods.getAdmin().call()
-        this.admin = admin
 
         /* Renvoie ID + nom d'un bet */
-     
 
         for (let i=0 ; i < this.numberOfBets; i++) {
-          var listLots = await this.betAbi.methods.listLoteries(i).call()
-          this.loadedLoteries.push(listLots)
-
-          // this.setState({loadedLoteries: this.loadedLoteries.concat(result6)})
-
-          var lotWin = await this.betAbi.methods.getBetsGain(i).call()
-          this.betsWin.push(lotWin)
-          // this.setState({betsWin: this.betsWin.concat(win)})
-          // this.setState({loadedLoteries : this.loadedLoteries.push(result6)})
-        }
+          var listBets = await this.betAbi.methods.getBetById(i).call()
+          this.loadedBets.push(listBets)
+          }
      
+
         this.loading = false // Me permet de gérer le front tant que les données sont pas arrivées
       }catch(e){
-        console.log("Je suis l'erreur : " + e)
+        
         console.log(e.message)
       }
     }
