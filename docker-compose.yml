@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  front:
+    container_name: front
+    build: ./front
+    volumes:
+      - ./front:/usr/src/app
+      - ./front/node_modules:/usr/src/app/node_modules
+    restart: always
+    ports:
+      - "8080:8080"
