@@ -1,0 +1,40 @@
+version: '3.4'
+
+services:
+
+  nginx-api:
+    build: ./.docker/front/nginx
+    container_name: front-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./.docker/front/nginx:/etc/nginx/conf.d
+    depends_on:
+      - vue
+
+  vue:
+    container_name: vue
+    build: ./front
+    volumes:
+      - ./front:/usr/src/app
+      - ./front/node_modules:/usr/src/app/node_modules
+    restart: always
+  
+  ganache:
+    image: trufflesuite/ganache-cli:latest
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./ganache_data:/ganache_data
+    entrypoint:
+      - node
+      - ./build/cli.node.js
+      - --deterministic
+      - --db=/ganache_data
+      - --mnemonic
+      - 'minimum symptom minute gloom tragic situate silver mechanic salad amused elite beef'
+      - --networkId
+      - '5777'
+      - --hostname
+      - '0.0.0.0'
+      - --debug
