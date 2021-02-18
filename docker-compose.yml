@@ -1,17 +1,6 @@
 version: '3.4'
 
 services:
-
-  nginx-api:
-    build: ./.docker/front/nginx
-    container_name: front-nginx
-    ports:
-      - "8080:80"
-    volumes:
-      - ./.docker/front/nginx:/etc/nginx/conf.d
-    depends_on:
-      - front
-
   front:
     container_name: front
     build: ./front
@@ -19,3 +8,5 @@ services:
       - ./front:/usr/src/app
       - ./front/node_modules:/usr/src/app/node_modules
     restart: always
+    ports:
+      - "8080:8080"
