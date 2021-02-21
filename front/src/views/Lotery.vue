@@ -81,6 +81,7 @@ export default {
     await this.loadBlockchainData();
   },
   methods: {
+    
     async addLot(){
       await this.loteryAbi.methods.addLotery(this.newLotName).send({ from: this.account })
     },

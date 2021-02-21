@@ -10,9 +10,9 @@
                 <p class="text-blue-600">
                   ID loterie : {{ this.data[0] }}
                 </p>
-                <p class="text-blue-600">
+                <!-- <p class="text-blue-600">
                   Gain loterie : {{ this.loteryWin[this.data[0]] }} Wei
-                </p>
+                </p> -->
                 <p class="text-blue-600">
                   Status : {{ this.data[2] }}
                 </p>
